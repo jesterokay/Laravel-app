@@ -1,707 +1,265 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Code block with language label and copy button</title>
-  <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/marked@4.0.0/marked.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.7.0/lib/core.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.7.0/lib/languages/php.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.7.0/lib/languages/cpp.min.js"></script>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.7.0/styles/atom-one-light.min.css" id="highlight-style">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
-  <style>
-    body {
-      font-family: system-ui, sans-serif;
-      background: #fff;
-      padding: 2rem;
-    }
+<script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked@4.0.0/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/highlight.js@11.7.0/lib/core.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/highlight.js@11.7.0/lib/languages/cpp.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.7.0/styles/atom-one-light.min.css" id="highlight-style">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+
+<style>
     .code-block {
-      position: relative;
-      background: #f6f8fa;
-      border-radius: 8px;
-      padding: 2.25rem 1rem 1rem 1rem;
-      font-family: Menlo, Monaco, Consolas, monospace;
-      font-size: 14px;
-      overflow-x: auto;
+        width: 100%;
+        overflow-x: auto;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        margin-top: 0.5rem;
+        background-color: #f5f5f5;
+        color: #1f2a44;
     }
-    pre {
-      margin: 0;
+    .dark .code-block {
+        background-color: #2d2d2d;
+        color: #e5e7eb;
     }
-    .language-label {
-      position: absolute;
-      top: 6px;
-      left: 12px;
-      font-size: 11px;
-      font-weight: 600;
-      text-transform: uppercase;
-      color: #6b7280;
-      font-family: system-ui, sans-serif;
-      user-select: none;
-      pointer-events: none;
-    }
-    .copy-btn {
-      position: absolute;
-      top: 6px;
-      right: 10px;
-      background: none;
-      border: none;
-      padding: 0;
-      cursor: pointer;
-      color: #6b7280;
-      transition: color 0.2s ease;
-    }
-    .copy-btn:hover {
-      color: #374151;
-    }
-    .copied {
-      color: #22c55e !important;
-    }
-    .copy-btn svg {
-      width: 20px;
-      height: 20px;
-      fill: currentColor;
+    pre, code {
+        font-family: 'Fira Code', monospace;
+        font-size: 0.875rem;
     }
     .chat-container {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      z-index: 1000;
-      display: flex;
-      background-color: #ffffff;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        z-index: 1000;
+        display: flex;
+        background-color: #ffffff;
     }
     .dark .chat-container {
-      background-color: #0f172a;
+        background-color: #0f172a;
     }
     textarea {
-      resize: none;
-      overflow-y: hidden;
+        resize: none;
+        overflow-y: hidden;
     }
     .fade-in-out {
-      transition: opacity 0.5s, transform 0.5s;
+        transition: opacity 0.5s, transform 0.5s;
     }
     .dark * {
-      transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+        transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
     }
     .sidebar {
-      width: 250px;
-      flex-shrink: 0;
-      overflow-y: auto;
-      background-color: #f9fafb;
-      border-right: 1px solid #e5e7eb;
+        width: 250px;
+        flex-shrink: 0;
+        overflow-y: auto;
+        background-color: #f9fafb;
+        border-right: 1px solid #e5e7eb;
     }
     .dark .sidebar {
-      background-color: #1e293b;
-      border-right-color: #334155;
+        background-color: #1e293b;
+        border-right-color: #334155;
     }
     .chat-content {
-      flex-grow: 1;
-      display: flex;
-      flex-direction: column;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
     }
     .dropdown-menu {
-      min-width: 100px;
+        min-width: 100px;
     }
     .chat-box {
-      flex-grow: 1;
-      overflow-y: auto;
-      padding: 1rem;
-      background-color: #f9fafb;
+        flex-grow: 1;
+        overflow-y: auto;
+        padding: 1rem;
+        background-color: #f9fafb;
     }
     .dark .chat-box {
-      background-color: #1e293b;
+        background-color: #1e293b;
     }
     .message-bubble {
-      max-width: 75%;
-      padding: 0.75rem 1rem;
-      border-radius: 0.5rem;
-      margin-bottom: 0.5rem;
-      word-wrap: break-word;
-      overflow-wrap: break-word;
-      position: relative;
+        max-width: 75%;
+        padding: 0.75rem 1rem;
+        border-radius: 0.5rem;
+        margin-bottom: 0.5rem;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        position: relative;
     }
     .user-message {
-      background-color: #2563eb;
-      color: #ffffff;
+        background-color: #2563eb;
+        color: #ffffff;
     }
     .dark .user-message {
-      background-color: #3b82f6;
-      color: #ffffff;
+        background-color: #3b82f6;
+        color: #ffffff;
     }
     .ai-message {
-      background-color: #ff0000;
-      color: #ffffff;
+        background-color: #ff0000;
+        color: #ffffff;
     }
     .dark .ai-message {
-      background-color: #374151;
-      color: #ffffff;
+        background-color: #374151;
+        color: #ffffff;
     }
     .header {
-      background-color: #ffffff;
-      border-bottom: 1px solid #e5e7eb;
+        background-color: #ffffff;
+        border-bottom: 1px solid #e5e7eb;
     }
     .dark .header {
-      background-color: #1e293b;
-      border-bottom-color: #374151;
+        background-color: #1e293b;
+        border-bottom-color: #374151;
     }
     .input-area {
-      margin: 0;
-      background-color: #ffffff;
-      border-top: 1px solid #e5e7eb;
+        margin: 0;
+        background-color: #ffffff;
+        border-top: 1px solid #e5e7eb;
     }
     .dark .input-area {
-      background-color: #1e293b;
-      border-top-color: #374151;
+        background-color: #1e293b;
+        border-top-color: #374151;
     }
     .textarea {
-      background-color: #ffffff;
-      border: 1px solid #d1d5db;
-      color: #1f2a44;
-      resize: none;
+        background-color: #ffffff;
+        border: 1px solid #d1d5db;
+        color: #1f2a44;
+        resize: none;
     }
     .dark .textarea {
-      background-color: #1f2937;
-      border-color: #4b5563;
-      color: #e5e7eb;
+        background-color: #1f2937;
+        border-color: #4b5563;
+        color: #e5e7eb;
     }
     .textarea::placeholder {
-      color: #6b7280;
+        color: #6b7280;
     }
     .dark .textarea::placeholder {
-      color: #9ca3af;
+        color: #9ca3af;
     }
     .button {
-      background-color: #2563eb;
-      color: #ffffff;
+        background-color: #2563eb;
+        color: #ffffff;
     }
     .dark .button {
-      background-color: #3b82f6;
-      color: #ffffff;
+        background-color: #3b82f6;
+        color: #ffffff;
     }
     .button:hover {
-      background-color: #1d4ed8;
+        background-color: #1d4ed8;
     }
     .dark .button:hover {
-      background-color: #2563eb;
+        background-color: #2563eb;
     }
     .theme-button {
-      background-color: #e5e7eb;
-      color: #1f2a44;
+        background-color: #e5e7eb;
+        color: #1f2a44;
     }
     .dark .theme-button {
-      background-color: #4b5563;
-      color: #e5e7eb;
+        background-color: #4b5563;
+        color: #e5e7eb;
     }
     .theme-button:hover {
-      background-color: #d1d5db;
+        background-color: #d1d5db;
     }
     .dark .theme-button:hover {
-      background-color: #6b7280;
+        background-color: #6b7280;
     }
     .conversation-item {
-      background-color: transparent;
-      color: #1f2a44;
+        background-color: transparent;
+        color: #1f2a44;
     }
     .conversation-item:hover {
-      background-color: #f3f4f6;
+        background-color: #f3f4f6;
     }
     .dark .conversation-item {
-      color: #e5e7eb;
+        color: #e5e7eb;
     }
     .dark .conversation-item:hover {
-      background-color: #374151;
+        background-color: #374151;
     }
     .conversation-item.active {
-      background-color: #e5e7eb;
-      color: #1f2a44;
+        background-color: #e5e7eb;
+        color: #1f2a44;
     }
     .dark .conversation-item.active {
-      background-color: #4b5563;
-      color: #e5e7eb;
+        background-color: #4b5563;
+        color: #e5e7eb;
     }
     .header-title {
-      color: #1f2a44;
+        color: #1f2a44;
     }
     .dark .header-title {
-      color: #e5e7eb;
+        color: #e5e7eb;
     }
     .modal {
-      background-color: rgba(0, 0, 0, 0.5);
+        background-color: rgba(0, 0, 0, 0.5);
     }
     .modal-content {
-      background-color: #ffffff;
-      color: #1f2a44;
+        background-color: #ffffff;
+        color: #1f2a44;
     }
     .dark .modal-content {
-      background-color: #1e293b;
-      color: #e5e7eb;
+        background-color: #1e293b;
+        color: #e5e7eb;
     }
     .modal-input {
-      background-color: #f9fafb;
-      border: 1px solid #d1d5db;
-      color: #1f2a44;
+        background-color: #f9fafb;
+        border: 1px solid #d1d5db;
+        color: #1f2a44;
     }
     .dark .modal-input {
-      background-color: #1f2937;
-      border-color: #4b5563;
-      color: #e5e7eb;
+        background-color: #1f2937;
+        border-color: #4b5563;
+        color: #e5e7eb;
     }
     .welcome-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100%;
-      text-align: center;
-      color: #1f2a44;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        text-align: center;
+        color: #1f2a44;
     }
     .dark .welcome-container {
-      color: #e5e7eb;
+        color: #e5e7eb;
     }
     .welcome-logo {
-      width: 100px;
-      height: 100px;
-      margin-bottom: 1rem;
+        width: 100px;
+        height: 100px;
+        margin-bottom: 1rem;
     }
     .edit-textarea {
-      width: 100%;
-      min-height: 100px;
-      padding: 0.5rem;
-      border-radius: 0.375rem;
+        width: 100%;
+        min-height: 100px;
+        padding: 0.5rem;
+        border-radius: 0.375rem;
     }
     .message-actions {
-      display: none;
-      gap: 0.5rem;
+        display: none;
+        gap: 0.5rem;
     }
     .message-bubble:hover .message-actions {
-      display: flex;
+        display: flex;
     }
     .message-footer {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      margin-top: 0.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 0.25rem;
     }
     .nav-buttons {
-      display: flex;
-      gap: 0.5rem;
-      margin-top: 0.5rem;
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
     }
     .edited-label {
-      font-size: 0.75rem;
-      color: #ffffff;
-      margin-top: 0.25rem;
+        font-size: 0.75rem;
+        color: #ffffff;
+        margin-top: 0.25rem;
     }
     .dark .edited-label {
-      color: #ffffff;
+        color: #ffffff;
     }
-  </style>
-</head>
-<body>
-<h2>Code block with language label and copy icon</h2>
-
-<div class="code-block">
-  <div class="language-label"></div>
-  <button class="copy-btn" aria-label="Copy code">
-    <svg viewBox="0 0 20 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg" class="icon-xs">
-      <path d="M7 9a2 2 0 012-2h6a2 2 0 012 2v6a2 2 0 01-2 2H9a2 2 0 01-2-2V9z"/>
-      <path d="M5 3a2 2 0 00-2 2v6a2 2 0 002 2V5h8a2 2 0 00-2-2H5z"/>
-    </svg>
-  </button>
-  <pre><code class="language-php">
-<?php
-namespace Modules\Jester\Http\Controllers;
-
-use Illuminate\Http\Request;
-use Illuminate\Routing\Controller;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\File;
-use Illuminate\Support\Str;
-
-class ChatController extends Controller
-{
-    protected $jsonBasePath = 'Modules/Jester/tests/aistudio';
-
-    public function index(Request $request)
-    {
-        try {
-            $conversations = $this->getConversations();
-            $currentConversationId = $request->query('conversation_id', array_key_first($conversations) ?? null);
-            $messages = $currentConversationId ? $this->getMessages($currentConversationId) : [];
-
-            if ($request->expectsJson()) {
-                return response()->json([
-                    'messages' => $messages,
-                    'conversations' => array_values($this->sortConversations($conversations)),
-                ]);
-            }
-
-            return view('jester::chat.index', compact('messages', 'conversations', 'currentConversationId'));
-        } catch (\Exception $e) {
-            \Log::error('Chat Index Error: ' . $e->getMessage());
-            return response()->json(['error' => 'Failed to load conversations: ' . $e->getMessage()], 500);
-        }
-    }
-
-    public function send(Request $request)
-    {
-        try {
-            $input = $request->validate([
-                'message' => 'required|string',
-                'conversation_id' => 'nullable|string',
-            ]);
-
-            $userMessage = $input['message'];
-            $conversationId = $input['conversation_id'] ?? Str::uuid()->toString();
-
-            $conversations = $this->getConversations();
-            if (!isset($conversations[$conversationId])) {
-                $title = Str::limit($userMessage, 50, '...');
-                $sanitizedTitle = $this->sanitizeTitle($title);
-                $filename = "{$sanitizedTitle}_{$conversationId}.json";
-                $conversations[$conversationId] = [
-                    'id' => $conversationId,
-                    'title' => $title,
-                    'filename' => $filename,
-                    'created_at' => now()->toDateTimeString(),
-                    'updated_at' => now()->toIso8601String(),
-                ];
-                $this->saveConversations($conversations);
-            } else {
-                $conversations[$conversationId]['updated_at'] = now()->toIso8601String();
-                $this->saveConversations($conversations);
-            }
-
-            $messages = $this->getMessages($conversationId);
-            $messages[] = [
-                'role' => 'user',
-                'text' => $userMessage,
-                'timestamp' => now()->format('h:i A'),
-                'originalText' => $userMessage,
-                'originalResponse' => null,
-                'versions' => [],
-                'currentVersion' => 0,
-            ];
-
-            $conversationHistory = array_map(function ($msg) {
-                $role = $msg['role'] === 'ai' ? 'model' : $msg['role'];
-                return [
-                    'role' => $role,
-                    'parts' => [['text' => $msg['text']]],
-                ];
-            }, $messages);
-
-            $model = 'gemini-1.5-flash-latest';
-            $apiKey = env('GOOGLE_API_KEY', 'AIzaSyDjkRrReRaUV888Aj9LPEktT1c-vMrTJK0');
-            $url = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key=" . $apiKey;
-
-            $body = [
-                'contents' => $conversationHistory,
-                'generationConfig' => [
-                    'maxOutputTokens' => 65536,
-                    'temperature' => 2,
-                ],
-            ];
-
-            $response = Http::withHeaders(['Content-Type' => 'application/json'])->post($url, $body);
-
-            if (!$response->successful()) {
-                \Log::error('AI API Error: ' . $response->body());
-                $reply = 'AI API returned an error: ' . ($response->json()['error']['message'] ?? 'Unknown error');
-            } else {
-                $json = $response->json();
-                $reply = $json['candidates'][0]['content']['parts'][0]['text'] ?? 'Sorry, no response.';
-            }
-
-            $messages[count($messages) - 1]['originalResponse'] = $reply;
-            $messages[] = [
-                'role' => 'ai',
-                'text' => $reply,
-                'timestamp' => now()->format('h:i A'),
-            ];
-
-            $this->saveMessages($conversationId, $messages);
-
-            return response()->json([
-                'reply' => $reply,
-                'messages' => $messages,
-                'conversation_id' => $conversationId,
-                'conversations' => array_values($this->sortConversations($conversations)),
-            ]);
-        } catch (\Exception $e) {
-            \Log::error('Chat Send Error: ' . $e->getMessage());
-            return response()->json(['error' => 'Failed to send message: ' . $e->getMessage()], 500);
-        }
-    }
-
-    public function edit(Request $request)
-    {
-        try {
-            $input = $request->validate([
-                'conversation_id' => 'required|string',
-                'message_index' => 'required|integer|min:0',
-                'message' => 'required|string',
-            ]);
-
-            $conversationId = $input['conversation_id'];
-            $messageIndex = $input['message_index'];
-            $newMessage = $input['message'];
-
-            $conversations = $this->getConversations();
-            if (!isset($conversations[$conversationId])) {
-                return response()->json(['error' => 'Conversation not found'], 404);
-            }
-
-            $messages = $this->getMessages($conversationId);
-            if (!isset($messages[$messageIndex]) || $messages[$messageIndex]['role'] !== 'user') {
-                return response()->json(['error' => 'Invalid message index or message is not editable'], 400);
-            }
-
-            if (!isset($messages[$messageIndex]['versions'])) {
-                $messages[$messageIndex]['versions'] = [];
-                $messages[$messageIndex]['originalText'] = $messages[$messageIndex]['text'];
-                $messages[$messageIndex]['originalResponse'] = isset($messages[$messageIndex + 1]) && $messages[$messageIndex + 1]['role'] === 'ai' ? $messages[$messageIndex + 1]['text'] : null;
-                $messages[$messageIndex]['currentVersion'] = 0;
-            }
-
-            $conversationHistory = array_map(function ($msg, $index) use ($messageIndex, $newMessage) {
-                $text = $index === $messageIndex ? $newMessage : $msg['text'];
-                $role = $msg['role'] === 'ai' ? 'model' : $msg['role'];
-                return [
-                    'role' => $role,
-                    'parts' => [['text' => $text]],
-                ];
-            }, array_slice($messages, 0, $messageIndex + 1), array_keys(array_slice($messages, 0, $messageIndex + 1)));
-
-            $model = 'gemini-1.5-flash-latest';
-            $apiKey = env('GOOGLE_API_KEY', 'AIzaSyDjkRrReRaUV888Aj9LPEktT1c-vMrTJK0');
-            $url = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key=" . $apiKey;
-
-            $body = [
-                'contents' => $conversationHistory,
-                'generationConfig' => [
-                    'maxOutputTokens' => 65536,
-                    'temperature' => 2,
-                ],
-            ];
-
-            $response = Http::withHeaders(['Content-Type' => 'application/json'])->post($url, $body);
-
-            if (!$response->successful()) {
-                \Log::error('AI API Error on Edit: ' . $response->body());
-                $reply = 'AI API returned an error: ' . ($response->json()['error']['message'] ?? 'Unknown error');
-            } else {
-                $json = $response->json();
-                $reply = $json['candidates'][0]['content']['parts'][0]['text'] ?? 'Sorry, no response.';
-            }
-
-            $messages[$messageIndex]['versions'][] = [
-                'text' => $newMessage,
-                'response' => $reply,
-                'timestamp' => now()->format('h:i A'),
-            ];
-            $messages[$messageIndex]['text'] = $newMessage;
-            $messages[$messageIndex]['timestamp'] = now()->format('h:i A');
-            $messages[$messageIndex]['currentVersion'] = count($messages[$messageIndex]['versions']);
-
-            if ($messageIndex === 0) {
-                $title = Str::limit($newMessage, 50, '...');
-                $sanitizedTitle = $this->sanitizeTitle($title);
-                $oldFilename = $conversations[$conversationId]['filename'];
-                $newFilename = "{$sanitizedTitle}_{$conversationId}.json";
-                $oldPath = base_path("{$this->jsonBasePath}/{$oldFilename}");
-                $newPath = base_path("{$this->jsonBasePath}/{$newFilename}");
-
-                if (File::exists($oldPath) && $oldFilename !== $newFilename) {
-                    File::move($oldPath, $newPath);
-                }
-
-                $conversations[$conversationId]['title'] = $title;
-                $conversations[$conversationId]['filename'] = $newFilename;
-                $conversations[$conversationId]['updated_at'] = now()->toIso8601String();
-                $this->saveConversations($conversations);
-            }
-
-            if (isset($messages[$messageIndex + 1]) && $messages[$messageIndex + 1]['role'] === 'ai') {
-                $messages[$messageIndex + 1] = [
-                    'role' => 'ai',
-                    'text' => $reply,
-                    'timestamp' => now()->format('h:i A'),
-                ];
-            } else {
-                $messages[] = [
-                    'role' => 'ai',
-                    'text' => $reply,
-                    'timestamp' => now()->format('h:i A'),
-                ];
-            }
-
-            $messages = array_slice($messages, 0, $messageIndex + 2);
-
-            $this->saveMessages($conversationId, $messages);
-
-            return response()->json([
-                'reply' => $reply,
-                'messages' => $messages,
-                'conversation_id' => $conversationId,
-                'conversations' => array_values($this->sortConversations($conversations)),
-            ]);
-        } catch (\Exception $e) {
-            \Log::error('Chat Edit Error: ' . $e->getMessage());
-            return response()->json(['error' => 'Failed to edit message: ' . $e->getMessage()], 500);
-        }
-    }
-
-    public function delete(Request $request)
-    {
-        try {
-            $conversationId = $request->input('conversation_id');
-            if ($conversationId) {
-                $conversations = $this->getConversations();
-                if (isset($conversations[$conversationId])) {
-                    $filename = $conversations[$conversationId]['filename'];
-                    $path = base_path("{$this->jsonBasePath}/{$filename}");
-                    if (File::exists($path)) {
-                        File::delete($path);
-                    }
-                    unset($conversations[$conversationId]);
-                    $this->saveConversations($conversations);
-                }
-            }
-            return response()->json(['conversations' => array_values($this->sortConversations($conversations))]);
-        } catch (\Exception $e) {
-            \Log::error('Chat Delete Error: ' . $e->getMessage());
-            return response()->json(['error' => 'Failed to delete conversation: ' . $e->getMessage()], 500);
-        }
-    }
-
-    public function new(Request $request)
-    {
-        try {
-            $conversationId = Str::uuid()->toString();
-            $title = 'New Chat';
-            $sanitizedTitle = $this->sanitizeTitle($title);
-            $filename = "{$sanitizedTitle}_{$conversationId}.json";
-            $conversations = $this->getConversations();
-            $conversations[$conversationId] = [
-                'id' => $conversationId,
-                'title' => $title,
-                'filename' => $filename,
-                'created_at' => now()->toDateTimeString(),
-                'updated_at' => now()->toIso8601String(),
-            ];
-            $this->saveConversations($conversations);
-            return response()->json([
-                'conversation_id' => $conversationId,
-                'conversations' => array_values($this->sortConversations($conversations)),
-            ]);
-        } catch (\Exception $e) {
-            \Log::error('Chat New Error: ' . $e->getMessage());
-            return response()->json(['error' => 'Failed to create new conversation: ' . $e->getMessage()], 500);
-        }
-    }
-
-    public function rename(Request $request)
-    {
-        try {
-            $input = $request->validate([
-                'conversation_id' => 'required|string',
-                'title' => 'required|string|max:100',
-            ]);
-
-            $conversationId = $input['conversation_id'];
-            $newTitle = str_replace(['/', '\\', ':'], '_', $input['title']);
-            $conversations = $this->getConversations();
-            if (isset($conversations[$conversationId])) {
-                $oldFilename = $conversations[$conversationId]['filename'];
-                $sanitizedTitle = $this->sanitizeTitle($newTitle);
-                $newFilename = "{$sanitizedTitle}_{$conversationId}.json";
-                $oldPath = base_path("{$this->jsonBasePath}/{$oldFilename}");
-                $newPath = base_path("{$this->jsonBasePath}/{$newFilename}");
-
-                if (File::exists($oldPath) && $oldFilename !== $newFilename) {
-                    File::move($oldPath, $newPath);
-                }
-
-                $conversations[$conversationId]['title'] = $newTitle;
-                $conversations[$conversationId]['filename'] = $newFilename;
-                $conversations[$conversationId]['updated_at'] = now()->toIso8601String();
-                $this->saveConversations($conversations);
-            }
-            return response()->json(['conversations' => array_values($this->sortConversations($conversations))]);
-        } catch (\Exception $e) {
-            \Log::error('Chat Rename Error: ' . $e->getMessage());
-            return response()->json(['error' => 'Failed to rename conversation: ' . $e->getMessage()], 500);
-        }
-    }
-
-    protected function getMessages($conversationId)
-    {
-        $conversations = $this->getConversations();
-        if (!isset($conversations[$conversationId])) {
-            return [];
-        }
-        $filename = $conversations[$conversationId]['filename'];
-        $path = base_path("{$this->jsonBasePath}/{$filename}");
-        if (File::exists($path)) {
-            $contents = File::get($path);
-            return json_decode($contents, true) ?: [];
-        }
-        return [];
-    }
-
-    protected function saveMessages($conversationId, array $messages)
-    {
-        $conversations = $this->getConversations();
-        if (!isset($conversations[$conversationId])) {
-            return;
-        }
-        $filename = $conversations[$conversationId]['filename'];
-        $path = base_path("{$this->jsonBasePath}/{$filename}");
-        File::ensureDirectoryExists(dirname($path));
-        File::put($path, json_encode($messages, JSON_PRETTY_PRINT));
-    }
-
-    protected function getConversations()
-    {
-        $path = base_path("{$this->jsonBasePath}/conversations.json");
-        if (File::exists($path)) {
-            $contents = File::get($path);
-            return json_decode($contents, true) ?: [];
-        }
-        return [];
-    }
-
-    protected function saveConversations(array $conversations)
-    {
-        $path = base_path("{$this->jsonBasePath}/conversations.json");
-        File::ensureDirectoryExists(dirname($path));
-        File::put($path, json_encode($conversations, JSON_PRETTY_PRINT));
-    }
-
-    protected function sortConversations(array $conversations)
-    {
-        usort($conversations, function ($a, $b) {
-            $aTime = isset($a['updated_at']) ? strtotime($a['updated_at']) : strtotime($a['created_at']);
-            $bTime = isset($b['updated_at']) ? strtotime($b['updated_at']) : strtotime($b['created_at']);
-            return $bTime <=> $aTime;
-        });
-        return $conversations;
-    }
-
-    protected function sanitizeTitle($title)
-    {
-        $sanitized = preg_replace('/[^a-zA-Z0-9\s_-]/', '', $title);
-        $sanitized = str_replace(' ', '_', trim($sanitized));
-        $sanitized = Str::limit($sanitized, 50, '');
-        return $sanitized ?: 'Untitled';
-    }
-}
-  </code></pre>
-</div>
+</style>
 
 <div
     x-data="chatApp()"
@@ -992,582 +550,532 @@ class ChatController extends Controller
 </div>
 
 <script>
-  hljs.registerLanguage('php', window.hljsDefinePhp);
-  hljs.highlightAll();
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('chatApp', () => ({
+            input: '',
+            messages: @json($messages ?? []),
+            conversations: @json(array_values($conversations ?? [])),
+            currentConversationId: @json($currentConversationId ?? null),
+            isLoading: false,
+            isDark: false,
+            showCopyMessage: false,
+            copySuccessMessage: '',
+            openDropdown: null,
+            showRenameModal: false,
+            renameInput: '',
+            renameConversationId: null,
+            newestConversationId: localStorage.getItem('newestConversationId') || null,
+            messageCache: {},
+            typingMessage: null,
+            editingMessageIndex: null,
+            editingMessageText: '',
 
-  document.querySelectorAll('.code-block').forEach(block => {
-    const codeElem = block.querySelector('code');
-    if (!codeElem) return;
+            initTheme() {
+                const savedTheme = localStorage.getItem('theme');
+                if (savedTheme === 'dark' || savedTheme === 'light') {
+                    this.isDark = savedTheme === 'dark';
+                } else {
+                    this.isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                }
+                this.applyTheme();
+                this.$nextTick(() => this.applyTheme());
+                this.sortConversations();
+                if (this.currentConversationId && this.messages.length) {
+                    this.messageCache[this.currentConversationId] = this.messages;
+                }
+            },
 
-    let langClass = Array.from(codeElem.classList).find(c => c.startsWith('language-'));
-    let langName = langClass ? langClass.replace('language-', '') : 'code';
-    block.querySelector('.language-label').textContent = langName.toUpperCase();
+            initializeMessages() {
+                this.scrollToBottom();
+            },
 
-    const copyBtn = block.querySelector('.copy-btn');
-    copyBtn.addEventListener('click', () => {
-      navigator.clipboard.writeText(codeElem.textContent).then(() => {
-        copyBtn.classList.add('copied');
-        copyBtn.innerHTML = `
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="#22c55e" xmlns="http://www.w3.org/2000/svg">
-            <path d="M20.3 5.71l-11.3 11.3-5.3-5.3 1.41-1.41 3.89 3.88 9.89-9.88z"/>
-          </svg>`;
-        setTimeout(() => {
-          copyBtn.classList.remove('copied');
-          copyBtn.innerHTML = `
-            <svg viewBox="0 0 20 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg" class="icon-xs">
-              <path d="M7 9a2 2 0 012-2h6a2 2 0 012 2v6a2 2 0 01-2 2H9a2 2 0 01-2-2V9z"/>
-              <path d="M5 3a2 2 0 00-2 2v6a2 2 0 002 2V5h8a2 2 0 00-2-2H5z"/>
-            </svg>`;
-        }, 1500);
-      }).catch(() => {
-        alert('Copy failed.');
-      });
+            sortConversations() {
+                if (this.newestConversationId) {
+                    const newestConv = this.conversations.find(c => c.id === this.newestConversationId);
+                    if (newestConv) {
+                        this.conversations = [
+                            newestConv,
+                            ...this.conversations.filter(c => c.id !== this.newestConversationId)
+                        ];
+                    }
+                }
+            },
+
+            toggleTheme() {
+                this.isDark = !this.isDark;
+                localStorage.setItem('theme', this.isDark ? 'dark' : 'light');
+                this.applyTheme();
+            },
+
+            applyTheme() {
+                const html = document.documentElement;
+                if (this.isDark) {
+                    html.classList.add('dark');
+                    document.getElementById('highlight-style').href = 'https://cdn.jsdelivr.net/npm/highlight.js@11.7.0/styles/atom-one-dark.min.css';
+                } else {
+                    html.classList.remove('dark');
+                    document.getElementById('highlight-style').href = 'https://cdn.jsdelivr.net/npm/highlight.js@11.7.0/styles/atom-one-light.min.css';
+                }
+            },
+
+            copyToClipboard(text) {
+                const cleanText = text.replace(/```[\w]*\n([\s\S]*?)\n```/g, '$1').trim();
+                navigator.clipboard.writeText(cleanText).then(() => {
+                    this.copySuccessMessage = 'Message copied to clipboard!';
+                    this.showCopyMessage = true;
+                    setTimeout(() => this.showCopyMessage = false, 2000);
+                }).catch((err) => {
+                    console.error('Copy failed:', err);
+                    this.copySuccessMessage = 'Failed to copy message.';
+                    this.showCopyMessage = true;
+                    setTimeout(() => this.showCopyMessage = false, 2000);
+                });
+            },
+
+            toggleDropdown(conversationId) {
+                this.openDropdown = this.openDropdown === conversationId ? null : conversationId;
+            },
+
+            openRenameModal(conversationId, title) {
+                this.renameConversationId = conversationId;
+                this.renameInput = title;
+                this.showRenameModal = true;
+                this.openDropdown = null;
+            },
+
+            closeRenameModal() {
+                this.showRenameModal = false;
+                this.renameInput = '';
+                this.renameConversationId = null;
+            },
+
+            renameConversation() {
+                if (!this.renameInput.trim()) return;
+
+                fetch('{{ route("jester.chat.rename") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    },
+                    body: JSON.stringify({
+                        conversation_id: this.renameConversationId,
+                        title: this.renameInput.trim(),
+                    }),
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                    return response.json();
+                })
+                .then(data => {
+                    this.conversations = data.conversations;
+                    this.sortConversations();
+                    this.closeRenameModal();
+                })
+                .catch(error => {
+                    console.error('Rename Conversation Error:', error);
+                    this.messages.push({
+                        role: 'ai',
+                        text: `Failed to rename conversation: ${error.message}`,
+                        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                    });
+                    this.scrollToBottom();
+                });
+            },
+
+            newConversation() {
+                fetch('{{ route("jester.chat.new") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    },
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                    return response.json();
+                })
+                .then(data => {
+                    this.newestConversationId = data.conversation_id;
+                    localStorage.setItem('newestConversationId', this.newestConversationId);
+                    this.conversations = [data.conversations.find(c => c.id === data.conversation_id), ...this.conversations.filter(c => c.id !== data.conversation_id)];
+                    this.currentConversationId = data.conversation_id;
+                    this.messages = [];
+                    this.messageCache[data.conversation_id] = [];
+                    this.scrollToBottom();
+                })
+                .catch(error => {
+                    console.error('New Conversation Error:', error);
+                    this.messages.push({
+                        role: 'ai',
+                        text: `Failed to create new conversation: ${error.message}`,
+                        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                    });
+                    this.scrollToBottom();
+                });
+            },
+
+            loadConversation(conversationId) {
+                window.history.pushState({}, '', `?conversation_id=${conversationId}`);
+                this.currentConversationId = conversationId;
+                if (this.typingMessage) {
+                    this.messages.push(this.typingMessage);
+                    this.messageCache[this.currentConversationId] = this.messages;
+                    this.typingMessage = null;
+                }
+                if (this.editingMessageIndex !== null) {
+                    this.cancelEdit();
+                }
+                if (conversationId !== this.newestConversationId) {
+                    this.newestConversationId = null;
+                    localStorage.removeItem('newestConversationId');
+                }
+
+                if (this.messageCache[conversationId]) {
+                    this.messages = this.messageCache[conversationId];
+                    const selectedConv = this.conversations.find(c => c.id === conversationId);
+                    if (selectedConv && conversationId !== this.newestConversationId) {
+                        this.conversations = [
+                            selectedConv,
+                            ...this.conversations.filter(c => c.id !== conversationId)
+                        ];
+                    }
+                    this.sortConversations();
+                    this.scrollToBottom();
+                    return;
+                }
+
+                fetch(`{{ route('jester.chat.index') }}?conversation_id=${conversationId}`, {
+                    headers: {
+                        'Accept': 'application/json',
+                    },
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                    const contentType = response.headers.get('content-type');
+                    if (!contentType || !contentType.includes('application/json')) {
+                        return response.text().then(text => {
+                            throw new Error(`Invalid response: Expected JSON, got ${text.substring(0, 50)}...`);
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    this.messages = data.messages || [];
+                    this.messageCache[conversationId] = this.messages;
+                    const selectedConv = this.conversations.find(c => c.id === conversationId);
+                    if (selectedConv && conversationId !== this.newestConversationId) {
+                        this.conversations = [
+                            selectedConv,
+                            ...this.conversations.filter(c => c.id !== conversationId)
+                        ];
+                    }
+                    this.conversations = data.conversations || this.conversations;
+                    this.sortConversations();
+                    this.scrollToBottom();
+                })
+                .catch(error => {
+                    console.error('Load Conversation Error:', error);
+                    this.messages.push({
+                        role: 'ai',
+                        text: `Failed to load conversation: ${error.message}`,
+                        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                    });
+                    this.scrollToBottom();
+                });
+            },
+
+            deleteConversation(conversationId) {
+                if (!confirm('Are you sure you want to delete this conversation?')) return;
+
+                fetch('{{ route("jester.chat.delete") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    },
+                    body: JSON.stringify({ conversation_id: conversationId }),
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                    return response.json();
+                })
+                .then(data => {
+                    this.conversations = data.conversations;
+                    delete this.messageCache[conversationId];
+                    if (this.newestConversationId === conversationId) {
+                        this.newestConversationId = null;
+                        localStorage.removeItem('newestConversationId');
+                    }
+                    if (this.currentConversationId === conversationId) {
+                        this.currentConversationId = this.conversations.length > 0 ? this.conversations[0].id : null;
+                        this.messages = this.currentConversationId ? (this.messageCache[this.currentConversationId] || []) : [];
+                        window.history.pushState({}, '', this.currentConversationId ? `?conversation_id=${this.currentConversationId}` : '');
+                    }
+                    this.sortConversations();
+                    this.scrollToBottom();
+                    this.openDropdown = null;
+                })
+                .catch(error => {
+                    console.error('Delete Conversation Error:', error);
+                    this.messages.push({
+                        role: 'ai',
+                        text: `Failed to delete conversation: ${error.message}`,
+                        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                    });
+                    this.scrollToBottom();
+                });
+            },
+
+            renderMessage(text) {
+                if (typeof text !== 'string') {
+                    console.error('Invalid message text:', text);
+                    return '<span>Error: Invalid message content</span>';
+                }
+                if (text.includes('```')) {
+                    const codeMatch = text.match(/```(\w+)?\n([\s\S]*?)\n```/);
+                    if (codeMatch) {
+                        const language = codeMatch[1] || 'plaintext';
+                        const code = codeMatch[2];
+                        if (typeof hljs !== 'undefined') {
+                            const highlighted = hljs.highlight(code, { language, ignoreIllegals: true }).value;
+                            return `<pre class="code-block"><code class="hljs ${language}">${highlighted}</code></pre>`;
+                        }
+                    }
+                }
+                if (typeof marked !== 'undefined') {
+                    return marked.parse(text, { breaks: true });
+                }
+                return text.replace(/\n/g, '<br>');
+            },
+
+            typeMessage(text, callback) {
+                if (typeof text !== 'string') {
+                    console.error('Invalid text for typing:', text);
+                    this.typingMessage = {
+                        role: 'ai',
+                        text: 'Error: Invalid response content',
+                        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                    };
+                    this.messages.push(this.typingMessage);
+                    this.messageCache[this.currentConversationId] = this.messages;
+                    this.typingMessage = null;
+                    this.scrollToBottom();
+                    if (callback) callback();
+                    return;
+                }
+                let index = 0;
+                const speed = 50;
+                this.typingMessage = {
+                    role: 'ai',
+                    text: '',
+                    timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                };
+
+                const typeNextChar = () => {
+                    if (index < text.length) {
+                        this.typingMessage.text += text.charAt(index);
+                        index++;
+                        this.scrollToBottom();
+                        setTimeout(typeNextChar, speed);
+                    } else {
+                        this.messages.push(this.typingMessage);
+                        this.messageCache[this.currentConversationId] = this.messages;
+                        this.typingMessage = null;
+                        this.scrollToBottom();
+                        if (callback) callback();
+                    }
+                };
+
+                typeNextChar();
+            },
+
+            editMessage(index, text) {
+                this.editingMessageIndex = index;
+                this.editingMessageText = text;
+                this.$nextTick(() => {
+                    const textarea = this.$el.querySelector(`textarea[x-model="editingMessageText"]`);
+                    if (textarea) {
+                        textarea.style.height = 'auto';
+                        textarea.style.height = (textarea.scrollHeight) + 'px';
+                        textarea.focus();
+                    }
+                });
+            },
+
+            saveEditedMessage(index) {
+                if (!this.editingMessageText.trim()) return;
+
+                this.isLoading = true;
+                fetch('{{ route("jester.chat.edit") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    },
+                    body: JSON.stringify({
+                        conversation_id: this.currentConversationId,
+                        message_index: index,
+                        message: this.editingMessageText.trim(),
+                    }),
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                    return response.json();
+                })
+                .then(data => {
+                    this.isLoading = false;
+                    this.messages = data.messages;
+                    this.messageCache[this.currentConversationId] = this.messages;
+                    this.conversations = data.conversations;
+                    this.sortConversations();
+                    this.editingMessageIndex = null;
+                    this.editingMessageText = '';
+                    this.copySuccessMessage = 'Message updated!';
+                    this.showCopyMessage = true;
+                    setTimeout(() => this.showCopyMessage = false, 2000);
+                    this.typeMessage(data.reply, () => {
+                        this.messageCache[this.currentConversationId] = this.messages;
+                    });
+                })
+                .catch(error => {
+                    this.isLoading = false;
+                    console.error('Edit Message Error:', error);
+                    this.messages.push({
+                        role: 'ai',
+                        text: `Failed to edit message: ${error.message}`,
+                        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                    });
+                    this.scrollToBottom();
+                });
+            },
+
+            cancelEdit() {
+                this.editingMessageIndex = null;
+                this.editingMessageText = '';
+            },
+
+            switchVersion(index, version) {
+                const msg = this.messages[index];
+                if (version === 0) {
+                    msg.text = msg.originalText;
+                    if (msg.originalResponse && this.messages[index + 1]) {
+                        this.messages[index + 1].text = msg.originalResponse;
+                    }
+                } else {
+                    msg.text = msg.versions[version - 1].text;
+                    if (msg.versions[version - 1].response && this.messages[index + 1]) {
+                        this.messages[index + 1].text = msg.versions[version - 1].response;
+                    }
+                }
+                msg.currentVersion = version;
+                this.messages = [...this.messages];
+                this.scrollToBottom();
+            },
+
+            prevVersion(index) {
+                const msg = this.messages[index];
+                if (msg.currentVersion > 0) {
+                    this.switchVersion(index, msg.currentVersion - 1);
+                }
+            },
+
+            nextVersion(index) {
+                const msg = this.messages[index];
+                if (msg.currentVersion < (msg.versions ? msg.versions.length : 0)) {
+                    this.switchVersion(index, msg.currentVersion + 1);
+                }
+            },
+
+            handleKeydown(event) {
+                if (event.key === 'Enter' && !event.shiftKey) {
+                    event.preventDefault();
+                    this.sendMessage();
+                }
+            },
+
+            adjustTextareaHeight(event) {
+                const textarea = event.target;
+                textarea.style.height = 'auto';
+                textarea.style.height = (textarea.scrollHeight) + 'px';
+            },
+
+            sendMessage() {
+                if (!this.input.trim()) return;
+
+                const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                this.messages.push({ 
+                    role: 'user', 
+                    text: this.input, 
+                    timestamp, 
+                    originalText: this.input, 
+                    originalResponse: null,
+                    versions: [], 
+                    currentVersion: 0 
+                });
+                const userText = this.input.trim();
+                this.isLoading = true;
+
+                this.input = '';
+                this.$nextTick(() => {
+                    this.$refs.chatInput.style.height = 'auto';
+                });
+
+                this.scrollToBottom();
+
+                fetch('{{ route("jester.chat.send") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    },
+                    body: JSON.stringify({
+                        message: userText,
+                        conversation_id: this.currentConversationId,
+                    }),
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                    return response.json();
+                })
+                .then(data => {
+                    this.isLoading = false;
+                    this.conversations = data.conversations || [];
+                    this.currentConversationId = data.conversation_id;
+                    if (!this.newestConversationId) {
+                        this.newestConversationId = data.conversation_id;
+                        localStorage.setItem('newestConversationId', this.newestConversationId);
+                    }
+                    this.sortConversations();
+                    window.history.pushState({}, '', `?conversation_id=${data.conversation_id}`);
+                    
+                    this.messages[this.messages.length - 1].originalResponse = data.reply;
+                    this.typeMessage(data.reply, () => {
+                        this.messageCache[this.currentConversationId] = this.messages;
+                    });
+                })
+                .catch(error => {
+                    this.isLoading = false;
+                    console.error('Send Message Error:', error);
+                    this.typeMessage(`Failed to send message: ${error.message}`, () => {
+                        this.messageCache[this.currentConversationId] = this.messages;
+                    });
+                });
+            },
+
+            scrollToBottom() {
+                this.$nextTick(() => {
+                    const box = document.getElementById('chat-box');
+                    if (box) {
+                        box.scrollTop = box.scrollHeight;
+                    }
+                });
+            },
+        }));
     });
-  });
-
-  document.addEventListener('alpine:init', () => {
-    Alpine.data('chatApp', () => ({
-      input: '',
-      messages: @json($messages ?? []),
-      conversations: @json(array_values($conversations ?? [])),
-      currentConversationId: @json($currentConversationId ?? null),
-      isLoading: false,
-      isDark: false,
-      showCopyMessage: false,
-      copySuccessMessage: '',
-      openDropdown: null,
-      showRenameModal: false,
-      renameInput: '',
-      renameConversationId: null,
-      newestConversationId: localStorage.getItem('newestConversationId') || null,
-      messageCache: {},
-      typingMessage: null,
-      editingMessageIndex: null,
-      editingMessageText: '',
-
-      initTheme() {
-        const savedTheme = localStorage.getItem('theme');
-        if (savedTheme === 'dark' || savedTheme === 'light') {
-          this.isDark = savedTheme === 'dark';
-        } else {
-          this.isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        }
-        this.applyTheme();
-        this.$nextTick(() => this.applyTheme());
-        this.sortConversations();
-        if (this.currentConversationId && this.messages.length) {
-          this.messageCache[this.currentConversationId] = this.messages;
-        }
-      },
-
-      initializeMessages() {
-        this.scrollToBottom();
-      },
-
-      sortConversations() {
-        if (this.newestConversationId) {
-          const newestConv = this.conversations.find(c => c.id === this.newestConversationId);
-          if (newestConv) {
-            this.conversations = [
-              newestConv,
-              ...this.conversations.filter(c => c.id !== this.newestConversationId)
-            ];
-          }
-        }
-      },
-
-      toggleTheme() {
-        this.isDark = !this.isDark;
-        localStorage.setItem('theme', this.isDark ? 'dark' : 'light');
-        this.applyTheme();
-      },
-
-      applyTheme() {
-        const html = document.documentElement;
-        if (this.isDark) {
-          html.classList.add('dark');
-          document.getElementById('highlight-style').href = 'https://cdn.jsdelivr.net/npm/highlight.js@11.7.0/styles/atom-one-dark.min.css';
-        } else {
-          html.classList.remove('dark');
-          document.getElementById('highlight-style').href = 'https://cdn.jsdelivr.net/npm/highlight.js@11.7.0/styles/atom-one-light.min.css';
-        }
-      },
-
-      copyToClipboard(text) {
-        const cleanText = text.replace(/```[\w]*\n([\s\S]*?)\n```/, '$1').trim();
-        navigator.clipboard.writeText(cleanText).then(() => {
-          this.copySuccessMessage = 'Message copied to clipboard!';
-          this.showCopyMessage = true;
-          setTimeout(() => this.showCopyMessage = false, 2000);
-        }).catch((err) => {
-          console.error('Copy failed:', err);
-          this.copySuccessMessage = 'Failed to copy message.';
-          this.showCopyMessage = true;
-          setTimeout(() => this.showCopyMessage = false, 2000);
-        });
-      },
-
-      toggleDropdown(conversationId) {
-        this.openDropdown = this.openDropdown === conversationId ? null : conversationId;
-      },
-
-      openRenameModal(conversationId, title) {
-        this.renameConversationId = conversationId;
-        this.renameInput = title;
-        this.showRenameModal = true;
-        this.openDropdown = null;
-      },
-
-      closeRenameModal() {
-        this.showRenameModal = false;
-        this.renameInput = '';
-        this.renameConversationId = null;
-      },
-
-      renameConversation() {
-        if (!this.renameInput.trim()) return;
-
-        fetch('{{ route("jester.chat.rename") }}', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-          },
-          body: JSON.stringify({
-            conversation_id: this.renameConversationId,
-            title: this.renameInput.trim(),
-          }),
-        })
-        .then(response => {
-          if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-          return response.json();
-        })
-        .then(data => {
-          this.conversations = data.conversations;
-          this.sortConversations();
-          this.closeRenameModal();
-        })
-        .catch(error => {
-          console.error('Rename Conversation Error:', error);
-          this.messages.push({
-            role: 'ai',
-            text: `Failed to rename conversation: ${error.message}`,
-            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          });
-          this.scrollToBottom();
-        });
-      },
-
-      newConversation() {
-        fetch('{{ route("jester.chat.new") }}', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-          },
-        })
-        .then(response => {
-          if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-          return response.json();
-        })
-        .then(data => {
-          this.newestConversationId = data.conversation_id;
-          localStorage.setItem('newestConversationId', this.newestConversationId);
-          this.conversations = [data.conversations.find(c => c.id === data.conversation_id), ...this.conversations.filter(c => c.id !== data.conversation_id)];
-          this.currentConversationId = data.conversation_id;
-          this.messages = [];
-          this.messageCache[data.conversation_id] = [];
-          this.scrollToBottom();
-        })
-        .catch(error => {
-          console.error('New Conversation Error:', error);
-          this.messages.push({
-            role: 'ai',
-            text: `Failed to create new conversation: ${error.message}`,
-            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          });
-          this.scrollToBottom();
-        });
-      },
-
-      loadConversation(conversationId) {
-        window.history.pushState({}, '', `?conversation_id=${conversationId}`);
-        this.currentConversationId = conversationId;
-        if (this.typingMessage) {
-          this.messages.push(this.typingMessage);
-          this.messageCache[this.currentConversationId] = this.messages;
-          this.typingMessage = null;
-        }
-        if (this.editingMessageIndex !== null) {
-          this.cancelEdit();
-        }
-        if (conversationId !== this.newestConversationId) {
-          this.newestConversationId = null;
-          localStorage.removeItem('newestConversationId');
-        }
-
-        if (this.messageCache[conversationId]) {
-          this.messages = this.messageCache[conversationId];
-          const selectedConv = this.conversations.find(c => c.id === conversationId);
-          if (selectedConv && conversationId !== this.newestConversationId) {
-            this.conversations = [
-              selectedConv,
-              ...this.conversations.filter(c => c.id !== conversationId)
-            ];
-          }
-          this.sortConversations();
-          this.scrollToBottom();
-          return;
-        }
-
-        fetch(`{{ route('jester.chat.index') }}?conversation_id=${conversationId}`, {
-          headers: {
-            'Accept': 'application/json',
-          },
-        })
-        .then(response => {
-          if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-          const contentType = response.headers.get('content-type');
-          if (!contentType || !contentType.includes('application/json')) {
-            return response.text().then(text => {
-              throw new Error(`Invalid response: Expected JSON, got ${text.substring(0, 50)}...`);
-            });
-          }
-          return response.json();
-        })
-        .then(data => {
-          this.messages = data.messages || [];
-          this.messageCache[conversationId] = this.messages;
-          const selectedConv = this.conversations.find(c => c.id === conversationId);
-          if (selectedConv && conversationId !== this.newestConversationId) {
-            this.conversations = [
-              selectedConv,
-              ...this.conversations.filter(c => c.id !== conversationId)
-            ];
-          }
-          this.conversations = data.conversations || this.conversations;
-          this.sortConversations();
-          this.scrollToBottom();
-        })
-        .catch(error => {
-          console.error('Load Conversation Error:', error);
-          this.messages.push({
-            role: 'ai',
-            text: `Failed to load conversation: ${error.message}`,
-            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          });
-          this.scrollToBottom();
-        });
-      },
-
-      deleteConversation(conversationId) {
-        if (!confirm('Are you sure you want to delete this conversation?')) return;
-
-        fetch('{{ route("jester.chat.delete") }}', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-          },
-          body: JSON.stringify({ conversation_id: conversationId }),
-        })
-        .then(response => {
-          if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-          return response.json();
-        })
-        .then(data => {
-          this.conversations = data.conversations;
-          delete this.messageCache[conversationId];
-          if (this.newestConversationId === conversationId) {
-            this.newestConversationId = null;
-            localStorage.removeItem('newestConversationId');
-          }
-          if (this.currentConversationId === conversationId) {
-            this.currentConversationId = this.conversations.length > 0 ? this.conversations[0].id : null;
-            this.messages = this.currentConversationId ? (this.messageCache[this.currentConversationId] || []) : [];
-            window.history.pushState({}, '', this.currentConversationId ? `?conversation_id=${this.currentConversationId}` : '');
-          }
-          this.sortConversations();
-          this.scrollToBottom();
-          this.openDropdown = null;
-        })
-        .catch(error => {
-          console.error('Delete Conversation Error:', error);
-          this.messages.push({
-            role: 'ai',
-            text: `Failed to delete conversation: ${error.message}`,
-            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          });
-          this.scrollToBottom();
-        });
-      },
-
-      renderMessage(text) {
-        if (typeof text !== 'string') {
-          console.error('Invalid message text:', text);
-          return '<span>Error: Invalid message content</span>';
-        }
-        if (text.includes('```')) {
-          const codeMatch = text.match(/```(\w+)?\n([\s\S]*?)\n```/);
-          if (codeMatch) {
-            const language = codeMatch[1] || 'plaintext';
-            const code = codeMatch[2];
-            if (typeof hljs !== 'undefined') {
-              try {
-                const highlighted = hljs.highlight(code, { language, ignoreIllegals: true }).value;
-                return `
-                  <div class="code-block">
-                    <div class="language-label">${language.toUpperCase()}</div>
-                    <button class="copy-btn" aria-label="Copy code">
-                      <svg viewBox="0 0 20 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg" class="icon-xs">
-                        <path d="M7 9a2 2 0 012-2h6a2 2 0 012 2v6a2 2 0 01-2 2H9a2 2 0 01-2-2V9z"/>
-                        <path d="M5 3a2 2 0 00-2 2v6a2 2 0 002 2V5h8a2 2 0 00-2-2H5z"/>
-                      </svg>
-                    </button>
-                    <pre><code class="hljs ${language}">${highlighted}</code></pre>
-                  </div>`;
-              } catch (e) {
-                console.error('Highlight.js error:', e);
-                return `<pre class="code-block"><code class="language-${language}">${code}</code></pre>`;
-              }
-            }
-          }
-        }
-        if (typeof marked !== 'undefined') {
-          return marked.parse(text, { breaks: true });
-        }
-        return text.replace(/\n/g, '<br>');
-      },
-
-      typeMessage(text, callback) {
-        if (typeof text !== 'string') {
-          console.error('Invalid text for typing:', text);
-          this.typingMessage = {
-            role: 'ai',
-            text: 'Error: Invalid response content',
-            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-          };
-          this.messages.push(this.typingMessage);
-          this.messageCache[this.currentConversationId] = this.messages;
-          this.typingMessage = null;
-          this.scrollToBottom();
-          if (callback) callback();
-          return;
-        }
-        let index = 0;
-        const speed = 50;
-        this.typingMessage = {
-          role: 'ai',
-          text: '',
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        };
-
-        const typeNextChar = () => {
-          if (index < text.length) {
-            this.typingMessage.text += text.charAt(index);
-            index++;
-            this.scrollToBottom();
-            setTimeout(typeNextChar, speed);
-          } else {
-            this.messages.push(this.typingMessage);
-            this.messageCache[this.currentConversationId] = this.messages;
-            this.typingMessage = null;
-            this.scrollToBottom();
-            if (callback) callback();
-          }
-        };
-
-        typeNextChar();
-      },
-
-      editMessage(index, text) {
-        this.editingMessageIndex = index;
-        this.editingMessageText = text;
-        this.$nextTick(() => {
-          const textarea = this.$el.querySelector(`textarea[x-model="editingMessageText"]`);
-          if (textarea) {
-            textarea.style.height = 'auto';
-            textarea.style.height = (textarea.scrollHeight) + 'px';
-            textarea.focus();
-          }
-        });
-      },
-
-      saveEditedMessage(index) {
-        if (!this.editingMessageText.trim()) return;
-
-        this.isLoading = true;
-        fetch('{{ route("jester.chat.edit") }}', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-          },
-          body: JSON.stringify({
-            conversation_id: this.currentConversationId,
-            message_index: index,
-            message: this.editingMessageText.trim(),
-          }),
-        })
-        .then(response => {
-          if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-          return response.json();
-        })
-        .then(data => {
-          this.isLoading = false;
-          this.messages = data.messages;
-          this.messageCache[this.currentConversationId] = this.messages;
-          this.conversations = data.conversations;
-          this.sortConversations();
-          this.editingMessageIndex = null;
-          this.editingMessageText = '';
-          this.copySuccessMessage = 'Message updated!';
-          this.showCopyMessage = true;
-          setTimeout(() => this.showCopyMessage = false, 2000);
-          this.typeMessage(data.reply, () => {
-            this.messageCache[this.currentConversationId] = this.messages;
-          });
-        })
-        .catch(error => {
-          this.isLoading = false;
-          console.error('Edit Message Error:', error);
-          this.messages.push({
-            role: 'ai',
-            text: `Failed to edit message: ${error.message}`,
-            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          });
-          this.scrollToBottom();
-        });
-      },
-
-      cancelEdit() {
-        this.editingMessageIndex = null;
-        this.editingMessageText = '';
-      },
-
-      switchVersion(index, version) {
-        const msg = this.messages[index];
-        if (version === 0) {
-          msg.text = msg.originalText;
-          if (msg.originalResponse && this.messages[index + 1]) {
-            this.messages[index + 1].text = msg.originalResponse;
-          }
-        } else {
-          msg.text = msg.versions[version - 1].text;
-          if (msg.versions[version - 1].response && this.messages[index + 1]) {
-            this.messages[index + 1].text = msg.versions[version - 1].response;
-          }
-        }
-        msg.currentVersion = version;
-        this.messages = [...this.messages];
-        this.scrollToBottom();
-      },
-
-      prevVersion(index) {
-        const msg = this.messages[index];
-        if (msg.currentVersion > 0) {
-          this.switchVersion(index, msg.currentVersion - 1);
-        }
-      },
-
-      nextVersion(index) {
-        const msg = this.messages[index];
-        if (msg.currentVersion < (msg.versions ? msg.versions.length : 0)) {
-          this.switchVersion(index, msg.currentVersion + 1);
-        }
-      },
-
-      handleKeydown(event) {
-        if (event.key === 'Enter' && !event.shiftKey) {
-          event.preventDefault();
-          this.sendMessage();
-        }
-      },
-
-      adjustTextareaHeight(event) {
-        const textarea = event.target;
-        textarea.style.height = 'auto';
-        textarea.style.height = (textarea.scrollHeight) + 'px';
-      },
-
-      sendMessage() {
-        if (!this.input.trim()) return;
-
-        const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        this.messages.push({ 
-          role: 'user', 
-          text: this.input, 
-          timestamp, 
-          originalText: this.input, 
-          originalResponse: null,
-          versions: [], 
-          currentVersion: 0 
-        });
-        const userText = this.input.trim();
-        this.isLoading = true;
-
-        this.input = '';
-        this.$nextTick(() => {
-          this.$refs.chatInput.style.height = 'auto';
-        });
-
-        this.scrollToBottom();
-
-        fetch('{{ route("jester.chat.send") }}', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-          },
-          body: JSON.stringify({
-            message: userText,
-            conversation_id: this.currentConversationId,
-          }),
-        })
-        .then(response => {
-          if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-          return response.json();
-        })
-        .then(data => {
-          this.isLoading = false;
-          this.conversations = data.conversations || [];
-          this.currentConversationId = data.conversation_id;
-          if (!this.newestConversationId) {
-            this.newestConversationId = data.conversation_id;
-            localStorage.setItem('newestConversationId', this.newestConversationId);
-          }
-          this.sortConversations();
-          window.history.pushState({}, '', `?conversation_id=${data.conversation_id}`);
-          
-          this.messages[this.messages.length - 1].originalResponse = data.reply;
-          this.typeMessage(data.reply, () => {
-            this.messageCache[this.currentConversationId] = this.messages;
-          });
-        })
-        .catch(error => {
-          this.isLoading = false;
-          console.error('Send Message Error:', error);
-          this.typeMessage(`Failed to send message: ${error.message}`, () => {
-            this.messageCache[this.currentConversationId] = this.messages;
-          });
-        });
-      },
-
-      scrollToBottom() {
-        this.$nextTick(() => {
-          const box = document.getElementById('chat-box');
-          if (box) {
-            box.scrollTop = box.scrollHeight;
-          }
-        });
-      },
-    }));
-  });
 </script>
-</body>
-</html>
