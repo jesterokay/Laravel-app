@@ -19,7 +19,7 @@ class DashboardController extends Controller
         $totalPurchases = Purchase::sum('total_amount');
 
         $monthlySales = Sale::select(
-            DB::raw("strftime('%Y-%m', created_at) as month"),
+            DB::raw("DATE_FORMAT(created_at, '%Y-%m') as month"),
             DB::raw('SUM(total_amount) as total')
         )
             ->groupBy('month')
@@ -27,7 +27,7 @@ class DashboardController extends Controller
             ->get();
 
         $yearlySales = Sale::select(
-            DB::raw("strftime('%Y', created_at) as year"),
+            DB::raw("DATE_FORMAT(created_at, '%Y') as year"),
             DB::raw('SUM(total_amount) as total')
         )
             ->groupBy('year')
