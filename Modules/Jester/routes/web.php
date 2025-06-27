@@ -16,8 +16,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('chat/delete', [ChatController::class, 'delete'])->name('chat.delete');
         Route::post('chat/edit', [ChatController::class, 'edit'])->name('chat.edit');
     });
-    // Route::prefix('jester')->group(function () {
-    //     Route::match(['get', 'post'], '/deepseek', [DeepSeekController::class, 'chat'])->name('jester.deepseek.chat_page');
-    //     Route::post('/deepseek/clear', [DeepSeekController::class, 'clearConversation'])->name('clear_chat');
-    // });
+    Route::prefix('jester')->group(function () {
+        Route::match(['get', 'post'], '/deepseek', [DeepSeekController::class, 'chat'])->name('jester.deepseek.chat_page');
+        Route::post('/deepseek/clear', [DeepSeekController::class, 'clearConversation'])->name('clear_chat');
+    });
 });
