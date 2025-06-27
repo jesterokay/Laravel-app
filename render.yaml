@@ -12,7 +12,21 @@ services:
       - key: APP_KEY
         value: base64:YOUR_GENERATED_KEY
       - key: DB_CONNECTION
-        value: sqlite
+        value: mysql
+      - key: DB_HOST
+        sync: false
+        value: ${{ MySQL.MYSQLHOST }}
+      - key: DB_PORT
+        sync: false
+        value: ${{ MySQL.MYSQLPORT }}
       - key: DB_DATABASE
-        value: /app/database/database.sqlite
-
+        sync: false
+        value: ${{ MySQL.MYSQLDATABASE }}
+      - key: DB_USERNAME
+        sync: false
+        value: ${{ MySQL.MYSQLUSER }}
+      - key: DB_PASSWORD
+        sync: false
+        value: ${{ MySQL.MYSQLPASSWORD }}
+      - key: MYSQL_ATTR_SSL_CA
+        value: /etc/ssl/certs/ca-certificates.crt

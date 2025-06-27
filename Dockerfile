@@ -2,8 +2,9 @@ FROM php:8.2-cli
 
 # Install dependencies
 RUN apt-get update && apt-get install -y \
-    git unzip curl libzip-dev libsqlite3-dev zip \
-    && docker-php-ext-install zip pdo pdo_sqlite \
+    git unzip curl libzip-dev libmysqlclient-dev zip \
+    ca-certificates \
+    && docker-php-ext-install zip pdo pdo_mysql \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install Composer
@@ -20,9 +21,6 @@ COPY --chown=appuser:appuser . .
 
 # Switch to non-root user
 USER appuser
-
-# Create database directory and SQLite file
-RUN mkdir -p /app/database && touch /app/database/database.sqlite && chmod -R 775 /app/database
 
 # Install PHP dependencies without running scripts
 RUN composer install --no-dev --optimize-autoloader --no-scripts
