@@ -1,0 +1,22 @@
+[
+    {
+        "role": "user",
+        "text": "Hello",
+        "timestamp": "03:59 PM",
+        "originalText": "hi",
+        "originalResponse": "Hi there! How can I help you today?\n",
+        "versions": [
+            {
+                "text": "Hello",
+                "response": "Hello there! How can I help you today?\n",
+                "timestamp": "03:59 PM"
+            }
+        ],
+        "currentVersion": 1
+    },
+    {
+        "role": "ai",
+        "text": "Hello there! How can I help you today?\n",
+        "timestamp": "03:59 PM"
+    }
+]

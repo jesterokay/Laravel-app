@@ -1,0 +1,12 @@
+{
+    "name": "Jester",
+    "alias": "jester",
+    "description": "jester",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\Jester\\Providers\\JesterServiceProvider"
+    ],
+    "files": [],
+    "enabled": "1"
+}

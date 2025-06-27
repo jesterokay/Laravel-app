@@ -1,0 +1,15 @@
+{
+    "name": "ModuleManagement",
+    "alias": "modulemanagement",
+    "description": "ModuleManagement module",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\ModuleManagement\\Providers\\ModuleManagementServiceProvider",
+        "Modules\\ModuleManagement\\Providers\\RouteServiceProvider",
+        "Modules\\ModuleManagement\\Providers\\EventServiceProvider"
+    ],
+    "aliases": {},
+    "files": [],
+    "requires": []
+}
