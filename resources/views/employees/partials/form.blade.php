@@ -46,18 +46,23 @@
     <!-- Spatie Permission Role -->
     <div class="mb-3">
         <label for="spatie_role" class="form-label">Permission Role</label>
-        <select name="spatie_role" id="spatie_role" class="form-control">
-            <option value="">Select Role</option>
-            @foreach ($spatieRoles as $spatieRole)
-                <option value="{{ $spatieRole->name }}"
-                    {{ old('spatie_role', isset($employee) && $employee->roles->first() ? $employee->roles->first()->name : '') == $spatieRole->name ? 'selected' : '' }}>
-                    {{ ucfirst($spatieRole->name) }}
-                </option>
-            @endforeach
-        </select>
-        @error('spatie_role')
-            <div class="text-danger">{{ $message }}</div>
-        @enderror
+        @if(isset($employee) && $employee->hasRole('superadmin'))
+            <input type="text" class="form-control" value="Superadmin" disabled>
+            <input type="hidden" name="spatie_role" value="superadmin">
+        @else
+            <select name="spatie_role" id="spatie_role" class="form-control">
+                <option value="">Select Role</option>
+                @foreach ($spatieRoles as $spatieRole)
+                    <option value="{{ $spatieRole->name }}"
+                        {{ old('spatie_role', isset($employee) && $employee->roles->first() ? $employee->roles->first()->name : '') == $spatieRole->name ? 'selected' : '' }}>
+                        {{ ucfirst($spatieRole->name) }}
+                    </option>
+                @endforeach
+            </select>
+            @error('spatie_role')
+                <div class="text-danger">{{ $message }}</div>
+            @enderror
+        @endif
     </div>
 
     <!-- Username -->
@@ -74,9 +79,9 @@
         <div class="mb-3">
             <label for="password" class="form-label">Password {{ isset($employee) ? '(leave blank to keep unchanged)' : '' }}</label>
             <input type="password" name="password" id="password" class="form-control">
-            @error('password')
-                <div class="text-danger">{{ $message }}</div>
-            @enderror
+            @if ($errors->has('password'))
+                <div class="text-danger">{{ $errors->first('password') }}</div>
+            @endif
         </div>
 
         <div class="mb-3">
@@ -157,7 +162,8 @@
         <label for="image" class="form-label">Profile Image</label>
         <input type="file" name="image" id="image" class="form-control">
         @if(isset($employee) && $employee->image)
-            <img src="{{ Storage::url($employee->image) }}" alt="Profile Image" class="img-thumbnail mt-2" style="max-width: 100px;">
+            <!-- Adjust for ImgBB URL instead of Storage -->
+            <img src="{{ $employee->image }}" alt="Profile Image" class="img-thumbnail mt-2" style="max-width: 100px;">
         @endif
         @error('image')
             <div class="text-danger">{{ $message }}</div>

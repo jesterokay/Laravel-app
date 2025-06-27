@@ -23,8 +23,11 @@ class EmployeeController extends Controller
 
         $query = Employee::with(['department', 'position'])->latest();
 
+        // Restrict non-superadmins from seeing superadmin employees
         if (!auth()->user()->hasRole('superadmin')) {
-            $query->where('id', '!=', 1);
+            $query->whereDoesntHave('roles', function ($query) {
+                $query->where('name', 'superadmin');
+            });
         }
 
         $employees = $query->paginate(10);
@@ -105,7 +108,7 @@ class EmployeeController extends Controller
 
     public function show(Employee $employee)
     {
-        if ($employee->id === 1 && !auth()->user()->hasRole('superadmin')) {
+        if ($employee->hasRole('superadmin') && !auth()->user()->hasRole('superadmin')) {
             abort(403, 'Unauthorized to view superadmin.');
         }
         Log::info('Displaying employee image', ['employee_id' => $employee->id, 'image_url' => $employee->image_url]);
@@ -114,7 +117,7 @@ class EmployeeController extends Controller
 
     public function edit(Employee $employee)
     {
-        if ($employee->id === 1 && !auth()->user()->hasRole('superadmin')) {
+        if ($employee->hasRole('superadmin') && !auth()->user()->hasRole('superadmin')) {
             abort(403, 'Unauthorized to edit superadmin.');
         }
         $departments = Department::all();
@@ -125,14 +128,19 @@ class EmployeeController extends Controller
 
     public function update(Request $request, Employee $employee)
     {
-        if ($employee->id === 1 && !auth()->user()->hasRole('superadmin')) {
+        if ($employee->hasRole('superadmin') && !auth()->user()->hasRole('superadmin')) {
             abort(403, 'Unauthorized to update superadmin.');
         }
 
         $validated = $request->validate([
             'department_id' => 'required|exists:departments,id',
             'position_id' => 'required|exists:positions,id',
-            'spatie_role' => 'required|exists:roles,name|not_in:superadmin',
+            'spatie_role' => [
+                'required',
+                'exists:roles,name',
+                // Allow superadmin role only if the employee already has it
+                $employee->hasRole('superadmin') ? 'in:superadmin' : 'not_in:superadmin',
+            ],
             'username' => 'required|unique:employees,username,' . $employee->id,
             'password' => 'nullable|confirmed|min:3',
             'first_name' => 'required|string',
@@ -184,6 +192,11 @@ class EmployeeController extends Controller
                 $validated['password'] = Hash::make($validated['password']);
             }
 
+            // If the employee is a superadmin, ensure the role is preserved
+            if ($employee->hasRole('superadmin')) {
+                $validated['spatie_role'] = 'superadmin';
+            }
+
             $employee->update($validated);
             $employee->syncRoles($validated['spatie_role']);
             DB::commit();
@@ -197,7 +210,7 @@ class EmployeeController extends Controller
 
     public function destroy(Employee $employee)
     {
-        if ($employee->id === 1) {
+        if ($employee->hasRole('superadmin')) {
             abort(403, 'Unauthorized to delete superadmin.');
         }
         try {
