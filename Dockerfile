@@ -3,23 +3,32 @@ FROM php:8.2-cli
 # Install dependencies
 RUN apt-get update && apt-get install -y \
     git unzip curl libzip-dev libsqlite3-dev zip \
-    && docker-php-ext-install zip pdo pdo_sqlite
+    && docker-php-ext-install zip pdo pdo_sqlite \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install Composer
-RUN curl -sS https://getcomposer.org/installer | php && \
-    mv composer.phar /usr/local/bin/composer
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 # Set working directory
 WORKDIR /app
 
+# Create non-root user
+RUN useradd -ms /bin/bash appuser && chown -R appuser:appuser /app
+
 # Copy project files
-COPY . .
+COPY --chown=appuser:appuser . .
 
-# Install PHP dependencies
-RUN composer install --no-dev --optimize-autoloader
+# Switch to non-root user
+USER appuser
 
-# Fix permissions
-RUN chmod -R 775 storage bootstrap/cache
+# Create database directory and SQLite file
+RUN mkdir -p /app/database && touch /app/database/database.sqlite && chmod -R 775 /app/database
+
+# Install PHP dependencies without running scripts
+RUN composer install --no-dev --optimize-autoloader --no-scripts
+
+# Fix permissions for Laravel directories
+RUN chmod -R 775 /app/storage /app/bootstrap/cache
 
 # Expose port
 EXPOSE 8000
