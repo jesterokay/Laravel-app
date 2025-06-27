@@ -2,7 +2,7 @@ FROM php:8.2-cli
 
 # Install dependencies
 RUN apt-get update && apt-get install -y \
-    git unzip curl libzip-dev libmysqlclient-dev zip \
+    git unzip curl libzip-dev libmariadb-dev-compat zip \
     ca-certificates \
     && docker-php-ext-install zip pdo pdo_mysql \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
