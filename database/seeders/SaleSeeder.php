@@ -12,7 +12,7 @@ class SaleSeeder extends Seeder
     public function run()
     {
         // Use factory for 10 records with unique invoice numbers
-        Sale::factory()->count(10)->sequence(function ($sequence) {
+        Sale::factory()->count(1)->sequence(function ($sequence) {
             $latestSale = Sale::latest()->first();
             $nextId = $latestSale ? $latestSale->id + $sequence->index + 1 : $sequence->index + 1;
             return [

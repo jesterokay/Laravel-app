@@ -9,6 +9,6 @@ class InventorySummarySeeder extends Seeder
 {
     public function run()
     {
-        InventorySummary::factory()->count(10)->create();
+        InventorySummary::factory()->count(1)->create();
     }
 }

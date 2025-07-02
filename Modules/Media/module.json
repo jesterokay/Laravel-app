@@ -5,7 +5,9 @@
     "keywords": [],
     "priority": 0,
     "providers": [
-        "Modules\\Media\\Providers\\MediaServiceProvider"
+        "Modules\\Media\\Providers\\MediaServiceProvider",
+        "Modules\\Media\\Providers\\RouteServiceProvider",
+        "Modules\\Media\\Providers\\EventServiceProvider"
     ],
     "files": [],
     "enabled": "1"
