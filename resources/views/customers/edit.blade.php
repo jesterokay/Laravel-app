@@ -56,7 +56,7 @@
                 <label for="image">Image</label>
                 <input type="file" name="image" id="image" class="form-control-file @error('image') is-invalid @enderror">
                 @if ($customer->image)
-                    <p>Current: <img src="{{ Storage::url($customer->image) }}" alt="Customer Image" width="100"></p>
+                    <p>Current: Image stored in Telegram</p>
                 @endif
                 @error('image')
                     <div class="invalid-feedback">{{ $message }}</div>

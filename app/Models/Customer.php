@@ -18,6 +18,11 @@ class Customer extends Model
         'status' => 'string',
     ];
 
+    public function getImageUrlAttribute()
+    {
+        return $this->image ?? null;
+    }
+
     public function leads()
     {
         return $this->hasMany(Lead::class);

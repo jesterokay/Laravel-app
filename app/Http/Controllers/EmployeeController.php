@@ -6,6 +6,7 @@ use App\Models\Employee;
 use App\Models\Department;
 use App\Models\Position;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
@@ -23,7 +24,6 @@ class EmployeeController extends Controller
 
         $query = Employee::with(['department', 'position'])->latest();
 
-        // Restrict non-superadmins from seeing superadmin employees
         if (!auth()->user()->hasRole('superadmin')) {
             $query->whereDoesntHave('roles', function ($query) {
                 $query->where('name', 'superadmin');
@@ -58,38 +58,47 @@ class EmployeeController extends Controller
             'hire_date' => 'required|date',
             'salary' => 'required|numeric',
             'status' => 'required|in:active,inactive,terminated',
-            'image' => 'required|image|max:2048',
+            'image' => 'required|image|mimes:jpg,png,gif|max:51200',
         ]);
 
+        $client = new Client();
+        $botToken = '7738267715:AAGisTRywG6B0-Bwn-JW-tmiMAjFfTxLOdE';
+        $chatId = '-1002710137316';
+        $messageThreadId = 8;
+
         try {
-            $client = new Client();
-            $response = $client->post('https://api.imgbb.com/1/upload', [
+            $response = $client->post("https://api.telegram.org/bot{$botToken}/sendPhoto", [
                 'multipart' => [
                     [
-                        'name' => 'key',
-                        'contents' => env('IMGBB_API_KEY'),
+                        'name' => 'chat_id',
+                        'contents' => $chatId,
                     ],
                     [
-                        'name' => 'image',
+                        'name' => 'message_thread_id',
+                        'contents' => $messageThreadId,
+                    ],
+                    [
+                        'name' => 'photo',
                         'contents' => fopen($request->file('image')->getRealPath(), 'r'),
+                        'filename' => $request->file('image')->getClientOriginalName(),
                     ],
                 ],
                 'timeout' => 30,
             ]);
             $data = json_decode($response->getBody(), true);
-            if (!$data['success']) {
-                Log::error('ImgBB upload failed for employee', [
+            if (!$data['ok']) {
+                Log::error('Telegram photo upload failed for employee', [
                     'response' => $data,
-                    'error_code' => $data['error']['code'] ?? 'N/A',
-                    'error_message' => $data['error']['message'] ?? 'Unknown error',
+                    'error_code' => $data['error_code'] ?? 'N/A',
+                    'error_message' => $data['description'] ?? 'Unknown error',
                 ]);
-                return redirect()->back()->with('error', 'Failed to upload image: ' . ($data['error']['message'] ?? 'Unknown error'));
+                return redirect()->back()->with('error', 'Failed to upload image to Telegram.');
             }
-            $validated['image'] = $data['data']['url'];
-            Log::info('Image uploaded to ImgBB', ['url' => $validated['image']]);
+            $validated['image'] = $data['result']['photo'][0]['file_id'];
+            Log::info('Image uploaded to Telegram', ['file_id' => $validated['image']]);
         } catch (RequestException $e) {
-            Log::error('ImgBB upload error', ['error' => $e->getMessage()]);
-            return redirect()->back()->with('error', 'Failed to upload image to ImgBB.');
+            Log::error('Telegram upload error', ['error' => $e->getMessage()]);
+            return redirect()->back()->with('error', 'Failed to upload image to Telegram.');
         }
 
         $validated['password'] = Hash::make($validated['password']);
@@ -111,8 +120,11 @@ class EmployeeController extends Controller
         if ($employee->hasRole('superadmin') && !auth()->user()->hasRole('superadmin')) {
             abort(403, 'Unauthorized to view superadmin.');
         }
-        Log::info('Displaying employee image', ['employee_id' => $employee->id, 'image_url' => $employee->image_url]);
-        return view('employees.show', compact('employee'));
+
+        $imageUrl = $this->getTelegramImageUrl($employee->image);
+
+        Log::info('Displaying employee', ['employee_id' => $employee->id, 'image_file_id' => $employee->image]);
+        return view('employees.show', compact('employee', 'imageUrl'));
     }
 
     public function edit(Employee $employee)
@@ -138,7 +150,6 @@ class EmployeeController extends Controller
             'spatie_role' => [
                 'required',
                 'exists:roles,name',
-                // Allow superadmin role only if the employee already has it
                 $employee->hasRole('superadmin') ? 'in:superadmin' : 'not_in:superadmin',
             ],
             'username' => 'required|unique:employees,username,' . $employee->id,
@@ -150,49 +161,52 @@ class EmployeeController extends Controller
             'hire_date' => 'required|date',
             'salary' => 'required|numeric',
             'status' => 'required|in:active,inactive,terminated',
-            'image' => 'nullable|image|max:2048',
+            'image' => 'nullable|image|mimes:jpg,png,gif|max:51200',
         ]);
 
         DB::beginTransaction();
         try {
-            // Preserve existing image URL if no new image is uploaded
             $validated['image'] = $request->hasFile('image') ? null : $employee->image;
 
             if ($request->hasFile('image')) {
                 $client = new Client();
-                $response = $client->post('https://api.imgbb.com/1/upload', [
+                $response = $client->post("https://api.telegram.org/bot7738267715:AAGisTRywG6B0-Bwn-JW-tmiMAjFfTxLOdE/sendPhoto", [
                     'multipart' => [
                         [
-                            'name' => 'key',
-                            'contents' => env('IMGBB_API_KEY'),
+                            'name' => 'chat_id',
+                            'contents' => '-1002710137316',
                         ],
                         [
-                            'name' => 'image',
+                            'name' => 'message_thread_id',
+                            'contents' => '8',
+                        ],
+                        [
+                            'name' => 'photo',
                             'contents' => fopen($request->file('image')->getRealPath(), 'r'),
+                            'filename' => $request->file('image')->getClientOriginalName(),
                         ],
                     ],
                     'timeout' => 30,
                 ]);
                 $data = json_decode($response->getBody(), true);
-                if (!$data['success']) {
-                    Log::error('ImgBB upload failed for employee update', [
+                if (!$data['ok']) {
+                    Log::error('Telegram photo upload failed for employee update', [
                         'response' => $data,
-                        'error_code' => $data['error']['code'] ?? 'N/A',
-                        'error_message' => $data['error']['message'] ?? 'Unknown error',
+                        'error_code' => $data['error_code'] ?? 'N/A',
+                        'error_message' => $data['description'] ?? 'Unknown error',
                     ]);
-                    return redirect()->back()->with('error', 'Failed to upload image: ' . ($data['error']['message'] ?? 'Unknown error'));
+                    return redirect()->back()->with('error', 'Failed to upload image to Telegram.');
                 }
-                $validated['image'] = $data['data']['url'];
-                Log::info('Image uploaded to ImgBB for update', ['url' => $validated['image']]);
+                $validated['image'] = $data['result']['photo'][0]['file_id'];
+                Log::info('Image uploaded to Telegram for update', ['file_id' => $validated['image']]);
             }
 
             if (empty($validated['password'])) {
-                unset($validated['password']); // Don't update password if not provided
+                unset($validated['password']);
             } else {
                 $validated['password'] = Hash::make($validated['password']);
             }
 
-            // If the employee is a superadmin, ensure the role is preserved
             if ($employee->hasRole('superadmin')) {
                 $validated['spatie_role'] = 'superadmin';
             }
@@ -220,5 +234,46 @@ class EmployeeController extends Controller
             Log::error('Employee deletion failed', ['error' => $e->getMessage()]);
             return redirect()->back()->with('error', 'Failed to delete employee.');
         }
+    }
+
+    protected function getTelegramImageUrl($fileId)
+    {
+        if (!$fileId) {
+            return null;
+        }
+
+        $client = new Client();
+        $botToken = '7738267715:AAGisTRywG6B0-Bwn-JW-tmiMAjFfTxLOdE';
+
+        try {
+            $response = $client->get("https://api.telegram.org/bot{$botToken}/getFile", [
+                'query' => ['file_id' => $fileId],
+                'timeout' => 10,
+            ]);
+            $data = json_decode($response->getBody(), true);
+            if ($data['ok']) {
+                $filePath = $data['result']['file_path'];
+                return "https://api.telegram.org/file/bot{$botToken}/{$filePath}";
+            } else {
+                Log::error('Failed to fetch Telegram file path', [
+                    'file_id' => $fileId,
+                    'response' => $data,
+                ]);
+            }
+        } catch (RequestException $e) {
+            Log::error('Telegram getFile error', [
+                'file_id' => $fileId,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        return null;
+    }
+
+    public function getUserImageUrl()
+    {
+        $user = Auth::user();
+        $imageUrl = $this->getTelegramImageUrl($user->image);
+        return response()->json(['imageUrl' => $imageUrl]);
     }
 }

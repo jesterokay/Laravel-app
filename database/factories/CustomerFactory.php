@@ -18,7 +18,7 @@ class CustomerFactory extends Factory
             'phone' => $this->faker->phoneNumber,
             'address' => $this->faker->address,
             'status' => $this->faker->randomElement(['active', 'inactive', 'prospect']),
-            'image' => 'uploads/customers/' . $this->faker->uuid . '.jpg',
+            'image' => null,
         ];
     }
 }

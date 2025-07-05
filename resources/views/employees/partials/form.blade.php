@@ -11,7 +11,6 @@
         <div class="alert alert-danger">{{ session('error') }}</div>
     @endif
 
-    <!-- Department -->
     <div class="mb-3">
         <label for="department_id" class="form-label">Department</label>
         <select name="department_id" id="department_id" class="form-control">
@@ -27,7 +26,6 @@
         @enderror
     </div>
 
-    <!-- Position -->
     <div class="mb-3">
         <label for="position_id" class="form-label">Position</label>
         <select name="position_id" id="position_id" class="form-control">
@@ -43,7 +41,6 @@
         @enderror
     </div>
 
-    <!-- Spatie Permission Role -->
     <div class="mb-3">
         <label for="spatie_role" class="form-label">Permission Role</label>
         @if(isset($employee) && $employee->hasRole('superadmin'))
@@ -65,7 +62,6 @@
         @endif
     </div>
 
-    <!-- Username -->
     <div class="mb-3">
         <label for="username" class="form-label">Username</label>
         <input type="text" name="username" id="username" class="form-control" value="{{ old('username', isset($employee) ? $employee->username : '') }}">
@@ -74,7 +70,6 @@
         @enderror
     </div>
 
-    <!-- Password (only for create or non-superadmin edit) -->
     @if(!isset($employee) || (isset($employee) && !$employee->hasRole('superadmin')))
         <div class="mb-3">
             <label for="password" class="form-label">Password {{ isset($employee) ? '(leave blank to keep unchanged)' : '' }}</label>
@@ -90,7 +85,6 @@
         </div>
     @endif
 
-    <!-- First Name -->
     <div class="mb-3">
         <label for="first_name" class="form-label">First Name</label>
         <input type="text" name="first_name" id="first_name" class="form-control" value="{{ old('first_name', isset($employee) ? $employee->first_name : '') }}">
@@ -99,7 +93,6 @@
         @enderror
     </div>
 
-    <!-- Last Name -->
     <div class="mb-3">
         <label for="last_name" class="form-label">Last Name</label>
         <input type="text" name="last_name" id="last_name" class="form-control" value="{{ old('last_name', isset($employee) ? $employee->last_name : '') }}">
@@ -108,7 +101,6 @@
         @enderror
     </div>
 
-    <!-- Email -->
     <div class="mb-3">
         <label for="email" class="form-label">Email</label>
         <input type="email" name="email" id="email" class="form-control" value="{{ old('email', isset($employee) ? $employee->email : '') }}">
@@ -117,7 +109,6 @@
         @enderror
     </div>
 
-    <!-- Phone -->
     <div class="mb-3">
         <label for="phone" class="form-label">Phone</label>
         <input type="text" name="phone" id="phone" class="form-control" value="{{ old('phone', isset($employee) ? $employee->phone : '') }}">
@@ -126,7 +117,6 @@
         @enderror
     </div>
 
-    <!-- Hire Date -->
     <div class="mb-3">
         <label for="hire_date" class="form-label">Hire Date</label>
         <input type="date" name="hire_date" id="hire_date" class="form-control" value="{{ old('hire_date', isset($employee) && $employee->hire_date ? $employee->hire_date->format('Y-m-d') : now()->format('Y-m-d')) }}">
@@ -135,7 +125,6 @@
         @enderror
     </div>
 
-    <!-- Salary -->
     <div class="mb-3">
         <label for="salary" class="form-label">Salary</label>
         <input type="number" name="salary" id="salary" class="form-control" value="{{ old('salary', isset($employee) ? $employee->salary : '') }}" step="0.01">
@@ -144,7 +133,6 @@
         @enderror
     </div>
 
-    <!-- Status -->
     <div class="mb-3">
         <label for="status" class="form-label">Status</label>
         <select name="status" id="status" class="form-control">
@@ -157,20 +145,17 @@
         @enderror
     </div>
 
-    <!-- Profile Image -->
     <div class="mb-3">
         <label for="image" class="form-label">Profile Image</label>
-        <input type="file" name="image" id="image" class="form-control">
+        <input type="file" name="image" id="image" class="form-control" accept="image/jpeg,image/png,image/gif">
         @if(isset($employee) && $employee->image)
-            <!-- Adjust for ImgBB URL instead of Storage -->
-            <img src="{{ $employee->image }}" alt="Profile Image" class="img-thumbnail mt-2" style="max-width: 100px;">
+            <p class="mt-2">Current Image Stored in Telegram</p>
         @endif
         @error('image')
             <div class="text-danger">{{ $message }}</div>
         @enderror
     </div>
 
-    <!-- Buttons -->
     <button type="submit" class="btn btn-primary">{{ isset($employee) ? 'Update' : 'Create' }}</button>
     <a href="{{ route('employees.index') }}" class="btn btn-secondary">Cancel</a>
 </form>

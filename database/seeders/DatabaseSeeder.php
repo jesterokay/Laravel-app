@@ -88,8 +88,6 @@ class DatabaseSeeder extends Seeder
         );
 
         if (Employee::count() === 0) {
-            $defaultImageUrl = 'https://i.ibb.co/0jZ3X1W/default.jpg';
-
             Employee::create([
                 'id' => 1,
                 'department_id' => $department->id,
@@ -103,7 +101,7 @@ class DatabaseSeeder extends Seeder
                 'hire_date' => now()->timezone('Asia/Phnom_Penh')->format('Y-m-d'),
                 'salary' => 100000,
                 'status' => 'active',
-                'image' => $defaultImageUrl,
+                'image' => null,
             ])->syncRoles(['superadmin']);
 
             Employee::create([
@@ -119,7 +117,7 @@ class DatabaseSeeder extends Seeder
                 'hire_date' => now()->timezone('Asia/Phnom_Penh')->format('Y-m-d'),
                 'salary' => 100000,
                 'status' => 'active',
-                'image' => $defaultImageUrl,
+                'image' => null,
             ])->syncRoles(['admin']);
 
             Employee::create([
@@ -135,7 +133,7 @@ class DatabaseSeeder extends Seeder
                 'hire_date' => now()->timezone('Asia/Phnom_Penh')->format('Y-m-d'),
                 'salary' => 50000,
                 'status' => 'active',
-                'image' => $defaultImageUrl,
+                'image' => null,
             ])->syncRoles(['user']);
 
             $faker = Faker::create();
@@ -151,7 +149,7 @@ class DatabaseSeeder extends Seeder
                 'hire_date' => now()->timezone('Asia/Phnom_Penh')->format('Y-m-d'),
                 'salary' => $faker->numberBetween(30000, 80000),
                 'status' => 'active',
-                'image' => $defaultImageUrl,
+                'image' => null,
             ])->syncRoles(['user']);
         }
 

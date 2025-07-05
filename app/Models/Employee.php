@@ -35,9 +35,7 @@ class Employee extends Authenticatable
 
     public function getImageUrlAttribute()
     {
-        return $this->image && str_starts_with($this->image, 'http')
-            ? $this->image
-            : 'https://i.ibb.co/0jZ3X1W/default.jpg';
+        return $this->image ?? null;
     }
 
     public function department()
