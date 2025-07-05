@@ -101,7 +101,6 @@
                                 <strong>Choose File</strong> <span class="text-danger">*</span>
                             </label>
                             
-                            <!-- Upload Area -->
                             <div class="upload-area" id="uploadArea">
                                 <div class="upload-content">
                                     <i class="bi bi-cloud-upload upload-icon"></i>
@@ -113,12 +112,11 @@
                                     id="file"
                                     name="file" 
                                     class="form-control d-none @error('file') is-invalid @enderror" 
-                                    accept="image/*,video/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.txt"
+                                    accept="image/jpeg,image/png,image/webp,video/mp4,video/avi,video/quicktime,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain"
                                     required
                                 >
                             </div>
                             
-                            <!-- File Info -->
                             <div id="fileInfo" class="mt-3 d-none">
                                 <div class="alert alert-info">
                                     <strong id="fileName"></strong>
@@ -140,7 +138,6 @@
                             </small>
                         </div>
                         
-                        <!-- Progress Bar -->
                         <div id="progressContainer" class="mb-3 d-none">
                             <div class="progress">
                                 <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%">
@@ -244,12 +241,10 @@ document.addEventListener('DOMContentLoaded', function() {
     let lastLoaded = 0;
     let lastTime = 0;
 
-    // Click to upload
     uploadArea.addEventListener('click', () => {
         fileInput.click();
     });
 
-    // Drag and drop
     uploadArea.addEventListener('dragover', (e) => {
         e.preventDefault();
         uploadArea.classList.add('dragover');
@@ -269,7 +264,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // File input change
     fileInput.addEventListener('change', (e) => {
         if (e.target.files.length > 0) {
             handleFileSelect(e.target.files[0]);
@@ -282,11 +276,9 @@ document.addEventListener('DOMContentLoaded', function() {
         fileType.textContent = file.type || 'Unknown';
         fileInfo.classList.remove('d-none');
         
-        // Reset previews
         videoPreview.classList.add('d-none');
         imagePreview.classList.add('d-none');
         
-        // Auto-detect media type and show preview
         if (file.type.startsWith('image/')) {
             if (!mediaTypeSelect.value) mediaTypeSelect.value = 'image';
             const reader = new FileReader();
@@ -300,7 +292,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const url = URL.createObjectURL(file);
             videoPreview.src = url;
             videoPreview.classList.remove('d-none');
-            videoPreview.onload = () => URL.revokeObjectURL(url);
+            videoPreview.onloadeddata = () => URL.revokeObjectURL(url);
         } else {
             if (!mediaTypeSelect.value) mediaTypeSelect.value = 'document';
         }
@@ -332,14 +324,12 @@ document.addEventListener('DOMContentLoaded', function() {
         return `${Math.round(seconds / 3600)}h remaining`;
     }
 
-    // Form submission with enhanced progress tracking
     form.addEventListener('submit', function(e) {
         e.preventDefault();
         
         const formData = new FormData(form);
         const xhr = new XMLHttpRequest();
         
-        // Show progress
         progressContainer.classList.remove('d-none');
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Uploading...';
@@ -353,21 +343,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 const currentTime = Date.now();
                 const percentComplete = (e.loaded / e.total) * 100;
                 
-                // Update progress bar
                 progressBar.style.width = percentComplete + '%';
                 progressText.textContent = Math.round(percentComplete) + '%';
                 
-                // Calculate speed
                 const timeDiff = currentTime - lastTime;
                 const loadedDiff = e.loaded - lastLoaded;
                 
-                if (timeDiff > 1000) { // Update every second
+                if (timeDiff > 1000) {
                     const speed = loadedDiff / (timeDiff / 1000);
                     uploadSpeed.textContent = formatSpeed(speed);
-                    
-                    // Calculate ETA
-                    const eta = calculateETA(e.loaded, e.total, speed);
-                    uploadStatus.textContent = `Uploading... ${eta}`;
+                    uploadStatus.textContent = `Uploading... ${calculateETA(e.loaded, e.total, speed)}`;
                     
                     lastLoaded = e.loaded;
                     lastTime = currentTime;
@@ -380,19 +365,23 @@ document.addEventListener('DOMContentLoaded', function() {
         };
         
         xhr.onload = function() {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="bi bi-cloud-upload"></i> Upload to Telegram';
+            
             if (xhr.status === 200) {
                 uploadStatus.textContent = 'Upload completed!';
+                progressBar.style.width = '100%';
                 progressText.textContent = '100%';
                 setTimeout(() => {
                     try {
                         const response = JSON.parse(xhr.responseText);
-                        if (response.redirect) {
+                        if (response.success && response.redirect) {
                             window.location.href = response.redirect;
                         } else {
-                            window.location.href = "{{ route('media.index') }}";
+                            handleError(response.error || 'Upload failed');
                         }
                     } catch (e) {
-                        window.location.href = "{{ route('media.index') }}";
+                        handleError('Invalid response from server');
                     }
                 }, 1000);
             } else {
@@ -412,11 +401,15 @@ document.addEventListener('DOMContentLoaded', function() {
             progressContainer.classList.add('d-none');
             submitBtn.disabled = false;
             submitBtn.innerHTML = '<i class="bi bi-cloud-upload"></i> Upload to Telegram';
-            alert(message);
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-danger alert-dismissible fade show';
+            alertDiv.innerHTML = `<i class="bi bi-exclamation-triangle"></i> ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
+            form.prepend(alertDiv);
         }
         
         xhr.open('POST', form.action);
-        xhr.timeout = 600000; // 10 minutes timeout
+        xhr.timeout = 600000;
         xhr.setRequestHeader('X-CSRF-TOKEN', document.querySelector('input[name="_token"]').value);
         xhr.send(formData);
     });

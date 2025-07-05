@@ -12,13 +12,20 @@ class MediaController extends Controller
 {
     private $channel_id = -1002808159169;
     private $bot_token = '7738267715:AAGisTRywG6B0-Bwn-JW-tmiMAjFfTxLOdE';
-    private $max_file_size = 52428800; // 50MB in bytes
+    private $max_file_size = 2097152000; // 2GB in bytes
 
     public function index()
     {
-        return view('media::media.index', [
-            'media' => Media::latest()->get()
-        ]);
+        $mediaItems = Media::latest()->get()->map(function ($media) {
+            if ($media->media_type === 'document' && in_array($media->mime_type, ['video/mp4', 'video/avi', 'video/quicktime'])) {
+                $media->display_type = 'video';
+            } else {
+                $media->display_type = $media->media_type;
+            }
+            return $media;
+        });
+
+        return view('media::media.index', ['media' => $mediaItems]);
     }
 
     public function create()
@@ -31,16 +38,15 @@ class MediaController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
-            'file' => 'required|file|max:51200|mimes:jpg,jpeg,png,webp,mp4,avi,mov,pdf,doc,docx,txt',
+            'file' => 'required|file|max:2097152|mimes:jpg,jpeg,png,webp,mp4,avi,mov,pdf,doc,docx,txt',
             'media_type' => 'required|in:image,video,document'
         ]);
 
         $file = $request->file('file');
         $media_type = $request->media_type;
 
-        // Check file size
-        if ($file->getSize() > $this->max_file_size) {
-            return back()->withErrors(['file' => 'File size must be less than 50MB']);
+        if ($media_type === 'video' && $file->getSize() > 52428800) {
+            $media_type = 'document';
         }
 
         try {
@@ -74,11 +80,21 @@ class MediaController extends Controller
 
     public function show(Media $media)
     {
+        if ($media->media_type === 'document' && in_array($media->mime_type, ['video/mp4', 'video/avi', 'video/quicktime'])) {
+            $media->display_type = 'video';
+        } else {
+            $media->display_type = $media->media_type;
+        }
         return view('media::media.show', compact('media'));
     }
 
     public function edit(Media $media)
     {
+        if ($media->media_type === 'document' && in_array($media->mime_type, ['video/mp4', 'video/avi', 'video/quicktime'])) {
+            $media->display_type = 'video';
+        } else {
+            $media->display_type = $media->media_type;
+        }
         return view('media::media.edit', compact('media'));
     }
 
@@ -87,26 +103,24 @@ class MediaController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
-            'file' => 'nullable|file|max:51200|mimes:jpg,jpeg,png,webp,mp4,avi,mov,pdf,doc,docx,txt',
+            'file' => 'nullable|file|max:2097152|mimes:jpg,jpeg,png,webp,mp4,avi,mov,pdf,doc,docx,txt',
             'media_type' => 'required|in:image,video,document',
         ]);
 
         try {
             if ($request->hasFile('file')) {
                 $file = $request->file('file');
-                
-                // Check file size
-                if ($file->getSize() > $this->max_file_size) {
-                    return back()->withErrors(['file' => 'File size must be less than 50MB']);
+                $media_type = $request->media_type;
+
+                if ($media_type === 'video' && $file->getSize() > 52428800) {
+                    $media_type = 'document';
                 }
 
-                // Delete old Telegram message if exists
                 if (!empty($media->telegram_message_id)) {
                     $this->deleteFromTelegram($media->telegram_message_id);
                 }
 
-                // Upload new file
-                $result = $this->uploadToTelegram($file, $request->media_type, $request->title, $request->description);
+                $result = $this->uploadToTelegram($file, $media_type, $request->title, $request->description);
                 
                 if ($result['success']) {
                     $media->update([
@@ -115,7 +129,7 @@ class MediaController extends Controller
                         'telegram_file_id' => $result['file_id'],
                         'telegram_file_path' => $result['file_path'],
                         'telegram_message_id' => $result['message_id'],
-                        'media_type' => $request->media_type,
+                        'media_type' => $media_type,
                         'file_size' => $file->getSize(),
                         'mime_type' => $file->getClientMimeType(),
                         'original_filename' => $file->getClientOriginalName()
@@ -124,7 +138,6 @@ class MediaController extends Controller
                     return back()->withErrors(['file' => 'Failed to upload new file to Telegram: ' . $result['error']]);
                 }
             } else {
-                // No new file - just update caption on Telegram
                 if (!empty($media->telegram_message_id)) {
                     $this->updateTelegramCaption($media->telegram_message_id, $request->title, $request->description);
                 }
@@ -152,13 +165,11 @@ class MediaController extends Controller
         $endpoint = $this->getTelegramEndpoint($media_type);
         $field = $this->getTelegramField($media_type);
 
-        // Prepare caption
         $caption = $title;
         if ($description) {
             $caption .= "\n\n" . $description;
         }
 
-        // Prepare request parameters
         $params = [
             'chat_id' => $this->channel_id,
             'caption' => $caption,
@@ -167,15 +178,13 @@ class MediaController extends Controller
             'disable_notification' => true,
         ];
 
-        // Additional parameters for different media types
-        switch ($media_type) {
-            case 'video':
-                $params['supports_streaming'] = true;
-                break;
-            case 'image':
-                // Force no compression for images
-                $params['disable_content_type_detection'] = true;
-                break;
+        if ($media_type === 'video') {
+            $params['supports_streaming'] = true;
+            $params['width'] = 1280;
+            $params['height'] = 720;
+            $params['duration'] = 0;
+        } elseif ($media_type === 'image') {
+            $params['disable_content_type_detection'] = true;
         }
 
         try {
@@ -192,10 +201,9 @@ class MediaController extends Controller
 
             if ($response->successful()) {
                 $result = $response->json()['result'];
-                $file_id = $this->getFileIdFromResponse($result, $media_type, $endpoint);
+                $file_id = $this->getFileIdFromResponse($result, $media_type);
                 $message_id = $result['message_id'];
 
-                // Get file path for downloads
                 $file_path = $this->getTelegramFilePath($file_id);
 
                 return [
@@ -221,20 +229,24 @@ class MediaController extends Controller
 
     private function getTelegramFilePath($file_id)
     {
-        try {
-            $response = Http::timeout(30)
-                ->get("https://api.telegram.org/bot{$this->bot_token}/getFile", [
-                    'file_id' => $file_id
-                ]);
+        $cacheKey = 'telegram_file_path_' . $file_id;
+        
+        return Cache::remember($cacheKey, now()->addHours(1), function () use ($file_id) {
+            try {
+                $response = Http::timeout(30)
+                    ->get("https://api.telegram.org/bot{$this->bot_token}/getFile", [
+                        'file_id' => $file_id
+                    ]);
 
-            if ($response->successful()) {
-                return $response->json()['result']['file_path'];
+                if ($response->successful()) {
+                    return $response->json()['result']['file_path'];
+                }
+            } catch (\Exception $e) {
+                \Log::warning('Failed to get Telegram file path: ' . $e->getMessage());
             }
-        } catch (\Exception $e) {
-            \Log::warning('Failed to get Telegram file path: ' . $e->getMessage());
-        }
 
-        return null;
+            return null;
+        });
     }
 
     private function updateTelegramCaption($message_id, $title, $description = null)
@@ -273,7 +285,7 @@ class MediaController extends Controller
     private function getTelegramEndpoint($media_type)
     {
         return match ($media_type) {
-            'image' => 'sendDocument', // Always use sendDocument for images to preserve quality
+            'image' => 'sendPhoto',
             'video' => 'sendVideo',
             'document' => 'sendDocument',
             default => 'sendDocument'
@@ -283,17 +295,17 @@ class MediaController extends Controller
     private function getTelegramField($media_type)
     {
         return match ($media_type) {
-            'image' => 'document', // Always use document for images to preserve quality
+            'image' => 'photo',
             'video' => 'video',
             'document' => 'document',
             default => 'document'
         };
     }
 
-    private function getFileIdFromResponse($result, $media_type, $endpoint = null)
+    private function getFileIdFromResponse($result, $media_type)
     {
         if ($media_type === 'image') {
-            return $result['document']['file_id'];
+            return $result['photo'][count($result['photo']) - 1]['file_id'];
         }
 
         return match ($media_type) {
@@ -320,16 +332,22 @@ class MediaController extends Controller
         }
 
         try {
-            $response = Http::timeout(300)->get($fileUrl);
-            if ($response->successful()) {
-                return response($response->body())
-                    ->header('Content-Type', $media->mime_type)
-                    ->header('Content-Disposition', 'attachment; filename="' . $media->original_filename . '"');
-            }
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Failed to download file');
-        }
+            return response()->stream(function () use ($fileUrl, $media) {
+                $client = new \GuzzleHttp\Client(['stream' => true]);
+                $response = $client->get($fileUrl, ['timeout' => 600]);
+                $body = $response->getBody();
 
-        return redirect()->back()->with('error', 'File download failed');
+                while (!$body->eof()) {
+                    echo $body->read(8192);
+                    flush();
+                }
+            }, 200, [
+                'Content-Type' => $media->mime_type,
+                'Content-Disposition' => 'inline; filename="' . $media->original_filename . '"',
+                'Content-Length' => $media->file_size,
+            ]);
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to fetch file: ' . $e->getMessage());
+        }
     }
 }
