@@ -28,7 +28,6 @@ class ChatController extends Controller
 
             return view('jester::chat.index', compact('messages', 'conversations', 'currentConversationId'));
         } catch (\Exception $e) {
-            \Log::error('Chat Index Error: ' . $e->getMessage());
             return response()->json(['error' => 'Failed to load conversations: ' . $e->getMessage()], 500);
         }
     }
@@ -96,7 +95,6 @@ class ChatController extends Controller
             $response = Http::withHeaders(['Content-Type' => 'application/json'])->post($url, $body);
 
             if (!$response->successful()) {
-                \Log::error('AI API Error: ' . $response->body());
                 $reply = 'AI API returned an error: ' . ($response->json()['error']['message'] ?? 'Unknown error');
             } else {
                 $json = $response->json();
@@ -119,7 +117,6 @@ class ChatController extends Controller
                 'conversations' => array_values($this->sortConversations($conversations)),
             ]);
         } catch (\Exception $e) {
-            \Log::error('Chat Send Error: ' . $e->getMessage());
             return response()->json(['error' => 'Failed to send message: ' . $e->getMessage()], 500);
         }
     }
@@ -178,7 +175,6 @@ class ChatController extends Controller
             $response = Http::withHeaders(['Content-Type' => 'application/json'])->post($url, $body);
 
             if (!$response->successful()) {
-                \Log::error('AI API Error on Edit: ' . $response->body());
                 $reply = 'AI API returned an error: ' . ($response->json()['error']['message'] ?? 'Unknown error');
             } else {
                 $json = $response->json();
@@ -239,7 +235,6 @@ class ChatController extends Controller
                 'conversations' => array_values($this->sortConversations($conversations)),
             ]);
         } catch (\Exception $e) {
-            \Log::error('Chat Edit Error: ' . $e->getMessage());
             return response()->json(['error' => 'Failed to edit message: ' . $e->getMessage()], 500);
         }
     }
@@ -262,7 +257,6 @@ class ChatController extends Controller
             }
             return response()->json(['conversations' => array_values($this->sortConversations($conversations))]);
         } catch (\Exception $e) {
-            \Log::error('Chat Delete Error: ' . $e->getMessage());
             return response()->json(['error' => 'Failed to delete conversation: ' . $e->getMessage()], 500);
         }
     }
@@ -288,7 +282,6 @@ class ChatController extends Controller
                 'conversations' => array_values($this->sortConversations($conversations)),
             ]);
         } catch (\Exception $e) {
-            \Log::error('Chat New Error: ' . $e->getMessage());
             return response()->json(['error' => 'Failed to create new conversation: ' . $e->getMessage()], 500);
         }
     }
@@ -322,7 +315,6 @@ class ChatController extends Controller
             }
             return response()->json(['conversations' => array_values($this->sortConversations($conversations))]);
         } catch (\Exception $e) {
-            \Log::error('Chat Rename Error: ' . $e->getMessage());
             return response()->json(['error' => 'Failed to rename conversation: ' . $e->getMessage()], 500);
         }
     }

@@ -107,11 +107,9 @@
                         saveConversation(conversation);
                         renderMessages(conversation);
                     } else {
-                        console.error('Unexpected API response:', data);
                         showError('Failed to get response from DeepSeek');
                     }
                 } catch (error) {
-                    console.error('Error:', error);
                     showError('An error occurred while communicating with DeepSeek');
                 }
             });

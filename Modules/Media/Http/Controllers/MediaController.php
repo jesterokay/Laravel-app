@@ -242,7 +242,6 @@ class MediaController extends Controller
                     return $response->json()['result']['file_path'];
                 }
             } catch (\Exception $e) {
-                \Log::warning('Failed to get Telegram file path: ' . $e->getMessage());
             }
 
             return null;
@@ -265,7 +264,6 @@ class MediaController extends Controller
                     'parse_mode' => 'HTML',
                 ]);
         } catch (\Exception $e) {
-            \Log::warning('Failed to update Telegram caption: ' . $e->getMessage());
         }
     }
 
@@ -278,7 +276,6 @@ class MediaController extends Controller
                     'message_id' => $message_id,
                 ]);
         } catch (\Exception $e) {
-            \Log::warning('Failed to delete from Telegram: ' . $e->getMessage());
         }
     }
 

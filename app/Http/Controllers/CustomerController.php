@@ -72,7 +72,6 @@ class CustomerController extends Controller
             ]);
             $data = json_decode($response->getBody(), true);
             if (!$data['ok']) {
-                Log::error('Telegram photo upload failed for customer', [
                     'response' => $data,
                     'error_code' => $data['error_code'] ?? 'N/A',
                     'error_message' => $data['description'] ?? 'Unknown error',
@@ -80,9 +79,7 @@ class CustomerController extends Controller
                 return redirect()->back()->with('error', 'Failed to upload image to Telegram.');
             }
             $validated['image'] = $data['result']['photo'][0]['file_id'];
-            Log::info('Image uploaded to Telegram for customer', ['file_id' => $validated['image']]);
         } catch (RequestException $e) {
-            Log::error('Telegram upload error for customer', ['error' => $e->getMessage()]);
             return redirect()->back()->with('error', 'Failed to upload image to Telegram.');
         }
 
@@ -155,7 +152,6 @@ class CustomerController extends Controller
                 ]);
                 $data = json_decode($response->getBody(), true);
                 if (!$data['ok']) {
-                    Log::error('Telegram photo upload failed for customer update', [
                         'response' => $data,
                         'error_code' => $data['error_code'] ?? 'N/A',
                         'error_message' => $data['description'] ?? 'Unknown error',
@@ -163,9 +159,7 @@ class CustomerController extends Controller
                     return redirect()->back()->with('error', 'Failed to upload image to Telegram.');
                 }
                 $validated['image'] = $data['result']['photo'][0]['file_id'];
-                Log::info('Image uploaded to Telegram for customer update', ['file_id' => $validated['image']]);
             } catch (RequestException $e) {
-                Log::error('Telegram upload error for customer update', ['error' => $e->getMessage()]);
                 return redirect()->back()->with('error', 'Failed to upload image to Telegram.');
             }
         } else {
@@ -207,13 +201,11 @@ class CustomerController extends Controller
                 $filePath = $data['result']['file_path'];
                 return "https://api.telegram.org/file/bot{$botToken}/{$filePath}";
             } else {
-                Log::error('Failed to fetch Telegram file path for customer', [
                     'file_id' => $fileId,
                     'response' => $data,
                 ]);
             }
         } catch (RequestException $e) {
-            Log::error('Telegram getFile error for customer', [
                 'file_id' => $fileId,
                 'error' => $e->getMessage(),
             ]);

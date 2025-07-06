@@ -87,7 +87,6 @@ class EmployeeController extends Controller
             ]);
             $data = json_decode($response->getBody(), true);
             if (!$data['ok']) {
-                Log::error('Telegram photo upload failed for employee', [
                     'response' => $data,
                     'error_code' => $data['error_code'] ?? 'N/A',
                     'error_message' => $data['description'] ?? 'Unknown error',
@@ -95,9 +94,7 @@ class EmployeeController extends Controller
                 return redirect()->back()->with('error', 'Failed to upload image to Telegram.');
             }
             $validated['image'] = $data['result']['photo'][0]['file_id'];
-            Log::info('Image uploaded to Telegram', ['file_id' => $validated['image']]);
         } catch (RequestException $e) {
-            Log::error('Telegram upload error', ['error' => $e->getMessage()]);
             return redirect()->back()->with('error', 'Failed to upload image to Telegram.');
         }
 
@@ -110,7 +107,6 @@ class EmployeeController extends Controller
             return redirect()->route('employees.index')->with('success', 'Employee created successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Employee creation failed', ['error' => $e->getMessage()]);
             return redirect()->back()->with('error', 'Failed to create employee.');
         }
     }
@@ -123,7 +119,6 @@ class EmployeeController extends Controller
 
         $imageUrl = $this->getTelegramImageUrl($employee->image);
 
-        Log::info('Displaying employee', ['employee_id' => $employee->id, 'image_file_id' => $employee->image]);
         return view('employees.show', compact('employee', 'imageUrl'));
     }
 
@@ -190,7 +185,6 @@ class EmployeeController extends Controller
                 ]);
                 $data = json_decode($response->getBody(), true);
                 if (!$data['ok']) {
-                    Log::error('Telegram photo upload failed for employee update', [
                         'response' => $data,
                         'error_code' => $data['error_code'] ?? 'N/A',
                         'error_message' => $data['description'] ?? 'Unknown error',
@@ -198,7 +192,6 @@ class EmployeeController extends Controller
                     return redirect()->back()->with('error', 'Failed to upload image to Telegram.');
                 }
                 $validated['image'] = $data['result']['photo'][0]['file_id'];
-                Log::info('Image uploaded to Telegram for update', ['file_id' => $validated['image']]);
             }
 
             if (empty($validated['password'])) {
@@ -217,7 +210,6 @@ class EmployeeController extends Controller
             return redirect()->route('employees.index')->with('success', 'Employee updated successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Employee update failed', ['error' => $e->getMessage()]);
             return redirect()->back()->with('error', 'Failed to update employee.');
         }
     }
@@ -231,7 +223,6 @@ class EmployeeController extends Controller
             $employee->delete();
             return redirect()->route('employees.index')->with('success', 'Employee deleted successfully.');
         } catch (\Exception $e) {
-            Log::error('Employee deletion failed', ['error' => $e->getMessage()]);
             return redirect()->back()->with('error', 'Failed to delete employee.');
         }
     }
@@ -255,13 +246,11 @@ class EmployeeController extends Controller
                 $filePath = $data['result']['file_path'];
                 return "https://api.telegram.org/file/bot{$botToken}/{$filePath}";
             } else {
-                Log::error('Failed to fetch Telegram file path', [
                     'file_id' => $fileId,
                     'response' => $data,
                 ]);
             }
         } catch (RequestException $e) {
-            Log::error('Telegram getFile error', [
                 'file_id' => $fileId,
                 'error' => $e->getMessage(),
             ]);

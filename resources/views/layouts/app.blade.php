@@ -139,7 +139,6 @@
                 if (window.innerWidth <= 768) {
                     $('body').toggleClass('sidebar-open');
                 }
-                console.log('Sidebar toggled:', $sidebar.hasClass('expanded'));
             });
 
             // Handle dropdowns
@@ -150,14 +149,12 @@
                     e.stopPropagation();
                     $parentLi.toggleClass('open');
                     $('.sidebar > ul > li').not($parentLi).removeClass('open');
-                    console.log('Dropdown toggled:', $parentLi.hasClass('open'));
                 }
             });
 
             // Ensure submenu links are clickable
             $submenuItems.on('click', function(e) {
                 e.stopPropagation();
-                console.log('Submenu link clicked:', $(this).attr('href'));
             });
 
             // Close sidebar on outside click (mobile)
@@ -169,7 +166,6 @@
                         $sidebar.removeClass('expanded');
                         $('body').removeClass('sidebar-open'); // Unlock scroll
                         $('.sidebar > ul > li').removeClass('open');
-                        console.log('Sidebar closed on outside click');
                     }
                 }
             });

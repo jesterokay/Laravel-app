@@ -155,6 +155,12 @@
                                title="View {{ $mediaItem->title }}">
                                 <i class="bi bi-eye"></i> View
                             </a>
+                            <a href="https://t.me/c/{{ abs($mediaItem->telegram_channel_id ?? -1002808159169) }}/{{ $mediaItem->telegram_message_id }}" 
+                               class="btn btn-sm btn-outline-info"
+                               title="View in Telegram"
+                               target="_blank">
+                                <i class="bi bi-telegram"></i>
+                            </a>
                             <a href="{{ route('media.edit', $mediaItem->id) }}" 
                                class="btn btn-sm btn-outline-warning"
                                title="Edit {{ $mediaItem->title }}">

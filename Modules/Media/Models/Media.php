@@ -17,7 +17,6 @@ class Media extends Model
     public function getTelegramFileUrl()
     {
         if (!$this->telegram_file_id || !$this->telegram_file_path) {
-            \Log::warning('Missing telegram_file_id or telegram_file_path for media ID: ' . $this->id, [
                 'file_id' => $this->telegram_file_id,
                 'file_path' => $this->telegram_file_path
             ]);
@@ -26,12 +25,10 @@ class Media extends Model
 
         $botToken = env('TELEGRAM_BOT_TOKEN');
         if (!$botToken) {
-            \Log::error('TELEGRAM_BOT_TOKEN not set in .env');
             return asset('images/placeholder.jpg');
         }
 
         $url = "https://api.telegram.org/file/bot{$botToken}/{$this->telegram_file_path}";
-        \Log::info('Generated Telegram file URL', ['url' => $url, 'media_id' => $this->id]);
         return $url;
     }
 }

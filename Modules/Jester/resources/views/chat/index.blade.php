@@ -431,7 +431,6 @@ initializeMessages()" class="chat-container transition-colors duration-300"
                                     $imageUrl = "https://api.telegram.org/file/bot{$botToken}/{$filePath}";
                                 }
                             } catch (\Exception $e) {
-                                \Illuminate\Support\Facades\Log::error('Failed to fetch Telegram image for user', [
                                     'file_id' => $user->image,
                                     'error' => $e->getMessage(),
                                 ]);
@@ -681,7 +680,6 @@ initializeMessages()" class="chat-container transition-colors duration-300"
                     this.showCopyMessage = true;
                     setTimeout(() => this.showCopyMessage = false, 2000);
                 }).catch((err) => {
-                    console.error('Copy failed:', err);
                     this.copySuccessMessage = 'Failed to copy message.';
                     this.showCopyMessage = true;
                     setTimeout(() => this.showCopyMessage = false, 2000);
@@ -731,7 +729,6 @@ initializeMessages()" class="chat-container transition-colors duration-300"
                         this.closeRenameModal();
                     })
                     .catch(error => {
-                        console.error('Rename Conversation Error:', error);
                         this.messages.push({
                             role: 'ai',
                             text: `Failed to rename conversation: ${error.message}`,
@@ -770,7 +767,6 @@ initializeMessages()" class="chat-container transition-colors duration-300"
                         this.scrollToBottom();
                     })
                     .catch(error => {
-                        console.error('New Conversation Error:', error);
                         this.messages.push({
                             role: 'ai',
                             text: `Failed to create new conversation: ${error.message}`,
@@ -847,7 +843,6 @@ initializeMessages()" class="chat-container transition-colors duration-300"
                         this.scrollToBottom();
                     })
                     .catch(error => {
-                        console.error('Load Conversation Error:', error);
                         this.messages.push({
                             role: 'ai',
                             text: `Failed to load conversation: ${error.message}`,
@@ -899,7 +894,6 @@ initializeMessages()" class="chat-container transition-colors duration-300"
                         this.openDropdown = null;
                     })
                     .catch(error => {
-                        console.error('Delete Conversation Error:', error);
                         this.messages.push({
                             role: 'ai',
                             text: `Failed to delete conversation: ${error.message}`,
@@ -914,7 +908,6 @@ initializeMessages()" class="chat-container transition-colors duration-300"
 
             renderMessage(text) {
                 if (typeof text !== 'string') {
-                    console.error('Invalid message text:', text);
                     return '<span>Error: Invalid message content</span>';
                 }
                 if (text.includes('```')) {
@@ -950,7 +943,6 @@ initializeMessages()" class="chat-container transition-colors duration-300"
 
             typeMessage(text, callback) {
                 if (typeof text !== 'string') {
-                    console.error('Invalid text for typing:', text);
                     this.typingMessage = {
                         role: 'ai',
                         text: 'Error: Invalid response content',
@@ -1047,7 +1039,6 @@ initializeMessages()" class="chat-container transition-colors duration-300"
                     })
                     .catch(error => {
                         this.isLoading = false;
-                        console.error('Edit Message Error:', error);
                         this.messages.push({
                             role: 'ai',
                             text: `Failed to edit message: ${error.message}`,
@@ -1176,7 +1167,6 @@ initializeMessages()" class="chat-container transition-colors duration-300"
                     })
                     .catch(error => {
                         this.isLoading = false;
-                        console.error('Send Message Error:', error);
                         this.typeMessage(`Failed to send message: ${error.message}`, () => {
                             this.messageCache[this.currentConversationId] = this
                                 .messages;

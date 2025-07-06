@@ -36,7 +36,6 @@ class DeepSeekController extends Controller
             // Basic check for API key presence
             if (empty($openRouterApiKey)) {
                 $errorMessage = 'OpenRouter API Key is missing in your .env file.';
-                Log::error($errorMessage);
             } else {
                 try {
                     // Make the HTTP POST request to OpenRouter API
@@ -57,19 +56,16 @@ class DeepSeekController extends Controller
                     // Check if the API call failed
                     if ($response->failed()) {
                         $errorMessage = "OpenRouter DeepSeek API call failed: " . $response->status() . " - " . $response->body();
-                        Log::error($errorMessage, ['api_response' => $response->json()]);
                     } else {
                         $responseData = $response->json();
                         if (isset($responseData['choices'][0]['message']['content'])) {
                             $deepSeekReply = $responseData['choices'][0]['message']['content'];
                         } else {
                             $errorMessage = 'OpenRouter DeepSeek API response did not contain expected chat content.';
-                            Log::warning($errorMessage, ['raw_response' => $responseData]);
                         }
                     }
                 } catch (\Throwable $e) {
                     $errorMessage = 'An unexpected error occurred while contacting the AI: ' . $e->getMessage();
-                    Log::error($errorMessage, ['exception' => $e]);
                 }
             }
 

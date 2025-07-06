@@ -43,7 +43,6 @@
                                 $imageUrl = "https://api.telegram.org/file/bot{$botToken}/{$filePath}";
                             }
                         } catch (\Exception $e) {
-                            \Illuminate\Support\Facades\Log::error('Failed to fetch Telegram image for user', [
                                 'file_id' => $user->image,
                                 'error' => $e->getMessage(),
                             ]);

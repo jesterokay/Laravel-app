@@ -254,7 +254,6 @@
                     })
                     .catch((e) => {
                         this.isLoading = false;
-                        console.error('Clear Chat Error:', e);
                         this.messages.push({
                             role: 'error',
                             text: `Sorry, failed to clear chat: ${e.message}`,
@@ -338,7 +337,6 @@
                     })
                     .catch((e) => {
                         this.isLoading = false;
-                        console.error('API Error:', e);
                         this.messages.push({
                             role: 'error',
                             text: `Sorry, an error occurred: ${e.message}`,

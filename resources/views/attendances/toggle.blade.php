@@ -86,7 +86,6 @@
                 alert(data.error);
             }
         })
-        .catch(error => console.error("Error:", error));
     }
 
     // Set initial button state
