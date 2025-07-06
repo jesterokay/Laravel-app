@@ -156,12 +156,20 @@
                                 <i class="bi bi-eye"></i> View
                             </a>
                             @if($mediaItem->telegram_message_id)
-                                <a href="https://t.me/c/{{ substr(abs(-1002808159169), 4) }}/{{ $mediaItem->telegram_message_id }}?single" 
-                                   class="btn btn-sm btn-outline-info"
+                                <a href="https://t.me/c/{{ config('telegram.channel_id', '2808159169') }}/{{ $mediaItem->telegram_message_id }}" 
+                                   class="btn btn-sm btn-outline-info telegram-link"
                                    title="View in Telegram"
-                                   target="_blank">
+                                   target="_blank"
+                                   data-media-id="{{ $mediaItem->id }}"
+                                   data-message-id="{{ $mediaItem->telegram_message_id }}">
                                     <i class="bi bi-telegram"></i>
                                 </a>
+                            @else
+                                <button class="btn btn-sm btn-outline-info disabled" 
+                                        title="Telegram link unavailable"
+                                        disabled>
+                                    <i class="bi bi-telegram"></i>
+                                </button>
                             @endif
                             <a href="{{ route('media.edit', $mediaItem->id) }}" 
                                class="btn btn-sm btn-outline-warning"
@@ -248,6 +256,16 @@ document.addEventListener('DOMContentLoaded', function() {
             if (overlay && overlay.classList.contains('position-absolute')) {
                 overlay.style.display = 'flex';
             }
+        });
+    });
+
+    // Log Telegram link clicks for debugging
+    const telegramLinks = document.querySelectorAll('.telegram-link');
+    telegramLinks.forEach(link => {
+        link.addEventListener('click', function() {
+            const mediaId = this.getAttribute('data-media-id');
+            const messageId = this.getAttribute('data-message-id');
+            console.log(`Clicked Telegram link for media ID: ${mediaId}, message ID: ${messageId}, URL: ${this.href}`);
         });
     });
 });
