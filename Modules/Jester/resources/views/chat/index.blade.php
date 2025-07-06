@@ -414,11 +414,34 @@ initializeMessages()" class="chat-container transition-colors duration-300"
         <div id="chat-box" class="chat-box" style="scroll-behavior: smooth;">
             <template x-if="messages.length === 0 && !typingMessage">
                 <div class="welcome-container">
-                    @php $user = Auth::user(); @endphp
-                    @if ($user->image)
-                        <a href="{{ $user->image }}" target="_blank">
-                            <img src="{{ $user->image }}" alt="Profile Image"
-                                class="w-16 h-16 rounded-full object-cover border border-white welcome-logo">
+                    @php
+                        $user = Auth::user();
+                        $imageUrl = null;
+                        if ($user->image) {
+                            try {
+                                $client = new \GuzzleHttp\Client();
+                                $botToken = '7738267715:AAGisTRywG6B0-Bwn-JW-tmiMAjFfTxLOdE';
+                                $response = $client->get("https://api.telegram.org/bot{$botToken}/getFile", [
+                                    'query' => ['file_id' => $user->image],
+                                    'timeout' => 10,
+                                ]);
+                                $data = json_decode($response->getBody(), true);
+                                if ($data['ok']) {
+                                    $filePath = $data['result']['file_path'];
+                                    $imageUrl = "https://api.telegram.org/file/bot{$botToken}/{$filePath}";
+                                }
+                            } catch (\Exception $e) {
+                                \Illuminate\Support\Facades\Log::error('Failed to fetch Telegram image for user', [
+                                    'file_id' => $user->image,
+                                    'error' => $e->getMessage(),
+                                ]);
+                            }
+                        }
+                    @endphp
+                    @if ($imageUrl)
+                        <a href="{{ route('employees.show', $user) }}" target="_blank">
+                            <img src="{{ $imageUrl }}" alt="Profile Image"
+                                class="w-16 h-16 rounded-full object-cover border border-white">
                         </a>
                     @else
                         <i class="fas fa-user-circle text-black text-6xl"></i>
