@@ -155,12 +155,14 @@
                                title="View {{ $mediaItem->title }}">
                                 <i class="bi bi-eye"></i> View
                             </a>
-                            <a href="https://t.me/c/{{ abs($mediaItem->telegram_channel_id ?? -1002808159169) }}/{{ $mediaItem->telegram_message_id }}" 
-                               class="btn btn-sm btn-outline-info"
-                               title="View in Telegram"
-                               target="_blank">
-                                <i class="bi bi-telegram"></i>
-                            </a>
+                            @if($mediaItem->telegram_message_id)
+                                <a href="https://t.me/c/{{ substr(abs(-1002808159169), 4) }}/{{ $mediaItem->telegram_message_id }}?single" 
+                                   class="btn btn-sm btn-outline-info"
+                                   title="View in Telegram"
+                                   target="_blank">
+                                    <i class="bi bi-telegram"></i>
+                                </a>
+                            @endif
                             <a href="{{ route('media.edit', $mediaItem->id) }}" 
                                class="btn btn-sm btn-outline-warning"
                                title="Edit {{ $mediaItem->title }}">
