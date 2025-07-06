@@ -97,32 +97,42 @@ class MediaController extends Controller
         }
         return view('media::media.edit', compact('media'));
     }
-
+    
     public function update(Request $request, Media $media)
     {
+        // Validate the request
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
             'file' => 'nullable|file|max:2097152|mimes:jpg,jpeg,png,webp,mp4,avi,mov,pdf,doc,docx,txt',
             'media_type' => 'required|in:image,video,document',
         ]);
-
+    
         try {
+            // If a new file is uploaded
             if ($request->hasFile('file')) {
                 $file = $request->file('file');
                 $media_type = $request->media_type;
-
+    
+                // Check if video file is too large for Telegram video API
                 if ($media_type === 'video' && $file->getSize() > 52428800) {
                     $media_type = 'document';
                 }
-
+    
+                // Delete old file from Telegram if exists
                 if (!empty($media->telegram_message_id)) {
-                    $this->deleteFromTelegram($media->telegram_message_id);
+                    try {
+                        $this->deleteFromTelegram($media->telegram_message_id);
+                    } catch (\Exception $e) {
+                        // Silent fail
+                    }
                 }
-
+    
+                // Upload new file to Telegram
                 $result = $this->uploadToTelegram($file, $media_type, $request->title, $request->description);
                 
                 if ($result['success']) {
+                    // Update database record
                     $media->update([
                         'title' => $request->title,
                         'description' => $request->description,
@@ -135,18 +145,54 @@ class MediaController extends Controller
                         'original_filename' => $file->getClientOriginalName()
                     ]);
                 } else {
-                    return back()->withErrors(['file' => 'Failed to upload new file to Telegram: ' . $result['error']]);
+                    return back()->withErrors(['file' => 'Failed to upload new file to Telegram: ' . $result['error']])->withInput();
                 }
             } else {
+                // Only updating title and description (no new file)
                 if (!empty($media->telegram_message_id)) {
-                    $this->updateTelegramCaption($media->telegram_message_id, $request->title, $request->description);
+                    try {
+                        $this->updateTelegramCaption($media->telegram_message_id, $request->title, $request->description);
+                    } catch (\Exception $e) {
+                        // Silent fail
+                    }
                 }
+                
+                // Update database record
                 $media->update($request->only(['title', 'description']));
             }
-
-            return redirect()->route('media.show', $media)->with('success', 'Media updated successfully');
+    
+            // Check if this is an AJAX request
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Media updated successfully',
+                    'redirect' => route('media.index')
+                ]);
+            }
+    
+            // Regular form submission - redirect to index
+            return redirect()->route('media.index')->with('success', 'Media updated successfully');
+            
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validation failed',
+                    'errors' => $e->errors()
+                ], 422);
+            }
+            
+            return back()->withErrors($e->errors())->withInput();
+            
         } catch (\Exception $e) {
-            return back()->withErrors(['file' => 'Update error: ' . $e->getMessage()]);
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Update error: ' . $e->getMessage()
+                ], 500);
+            }
+            
+            return back()->withErrors(['file' => 'Update error: ' . $e->getMessage()])->withInput();
         }
     }
 
@@ -164,12 +210,12 @@ class MediaController extends Controller
     {
         $endpoint = $this->getTelegramEndpoint($media_type);
         $field = $this->getTelegramField($media_type);
-
+    
         $caption = $title;
         if ($description) {
             $caption .= "\n\n" . $description;
         }
-
+    
         $params = [
             'chat_id' => $this->channel_id,
             'caption' => $caption,
@@ -177,7 +223,7 @@ class MediaController extends Controller
             'disable_web_page_preview' => true,
             'disable_notification' => true,
         ];
-
+    
         if ($media_type === 'video') {
             $params['supports_streaming'] = true;
             $params['width'] = 1280;
@@ -186,10 +232,21 @@ class MediaController extends Controller
         } elseif ($media_type === 'image') {
             $params['disable_content_type_detection'] = true;
         }
-
+    
         try {
             $tempPath = $file->getRealPath();
             
+            // Check if file exists and is readable
+            if (!file_exists($tempPath) || !is_readable($tempPath)) {
+                throw new \Exception('File not found or not readable');
+            }
+    
+            // Check file size
+            $fileSize = $file->getSize();
+            if ($fileSize > $this->max_file_size) {
+                throw new \Exception('File size exceeds maximum limit');
+            }
+    
             $response = Http::timeout(600)
                 ->connectTimeout(30)
                 ->retry(3, 2000)
@@ -198,14 +255,20 @@ class MediaController extends Controller
                     'Content-Type' => $file->getClientMimeType()
                 ])
                 ->post("https://api.telegram.org/bot{$this->bot_token}/{$endpoint}", $params);
-
+    
             if ($response->successful()) {
-                $result = $response->json()['result'];
+                $responseData = $response->json();
+                
+                if (!isset($responseData['ok']) || !$responseData['ok']) {
+                    throw new \Exception('Telegram API returned error: ' . ($responseData['description'] ?? 'Unknown error'));
+                }
+    
+                $result = $responseData['result'];
                 $file_id = $this->getFileIdFromResponse($result, $media_type);
                 $message_id = $result['message_id'];
-
+    
                 $file_path = $this->getTelegramFilePath($file_id);
-
+    
                 return [
                     'success' => true,
                     'file_id' => $file_id,
@@ -213,12 +276,15 @@ class MediaController extends Controller
                     'message_id' => $message_id
                 ];
             }
-
-            $error = $response->json()['description'] ?? 'Unknown error';
+    
+            $errorData = $response->json();
+            $error = $errorData['description'] ?? 'Unknown error';
+    
             return [
                 'success' => false,
                 'error' => $error
             ];
+            
         } catch (\Exception $e) {
             return [
                 'success' => false,

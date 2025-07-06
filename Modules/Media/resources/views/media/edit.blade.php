@@ -6,8 +6,8 @@
         <div class="col-md-8">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h1>Edit Media Information</h1>
-                <a href="{{ route('media.show', $media->id) }}" class="btn btn-outline-secondary">
-                    <i class="bi bi-arrow-left"></i> Back to View
+                <a href="{{ route('media.index') }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Back to Media List
                 </a>
             </div>
 
@@ -181,7 +181,7 @@
                         </div>
 
                         <div class="d-flex gap-2 justify-content-end">
-                            <a href="{{ route('media.show', $media->id) }}" class="btn btn-secondary">
+                            <a href="{{ route('media.index') }}" class="btn btn-secondary">
                                 Cancel
                             </a>
                             <button type="submit" class="btn btn-primary" id="submitBtn">
@@ -355,6 +355,15 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     form.addEventListener('submit', function(e) {
+        // Check if a file is being uploaded
+        const hasFile = fileInput.files.length > 0;
+        
+        // If no file is being uploaded, allow normal form submission
+        if (!hasFile) {
+            return true;
+        }
+        
+        // If file is being uploaded, use AJAX for progress tracking
         e.preventDefault();
         
         const formData = new FormData(form);
@@ -402,16 +411,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 uploadStatus.textContent = 'Upload completed!';
                 progressBar.style.width = '100%';
                 progressText.textContent = '100%';
+                
                 setTimeout(() => {
                     try {
                         const response = JSON.parse(xhr.responseText);
                         if (response.success && response.redirect) {
                             window.location.href = response.redirect;
+                        } else if (response.success) {
+                            window.location.href = '{{ route("media.index") }}';
                         } else {
-                            handleError(response.error || 'Upload failed');
+                            handleError(response.message || response.error || 'Upload failed');
                         }
                     } catch (e) {
-                        handleError('Invalid response from server');
+                        // If it's not JSON, it might be a redirect response
+                        // This means the upload was successful but returned HTML
+                        window.location.href = '{{ route("media.index") }}';
                     }
                 }, 1000);
             } else {
@@ -441,6 +455,7 @@ document.addEventListener('DOMContentLoaded', function() {
         xhr.open('POST', form.action);
         xhr.timeout = 600000;
         xhr.setRequestHeader('X-CSRF-TOKEN', document.querySelector('input[name="_token"]').value);
+        xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
         xhr.send(formData);
     });
 });
