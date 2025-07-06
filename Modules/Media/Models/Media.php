@@ -17,6 +17,7 @@ class Media extends Model
     public function getTelegramFileUrl()
     {
         if (!$this->telegram_file_id || !$this->telegram_file_path) {
+            ([
                 'file_id' => $this->telegram_file_id,
                 'file_path' => $this->telegram_file_path
             ]);

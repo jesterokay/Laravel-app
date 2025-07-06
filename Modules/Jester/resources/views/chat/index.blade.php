@@ -431,6 +431,7 @@ initializeMessages()" class="chat-container transition-colors duration-300"
                                     $imageUrl = "https://api.telegram.org/file/bot{$botToken}/{$filePath}";
                                 }
                             } catch (\Exception $e) {
+                                ([
                                     'file_id' => $user->image,
                                     'error' => $e->getMessage(),
                                 ]);

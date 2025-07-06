@@ -87,6 +87,7 @@ class EmployeeController extends Controller
             ]);
             $data = json_decode($response->getBody(), true);
             if (!$data['ok']) {
+                ([
                     'response' => $data,
                     'error_code' => $data['error_code'] ?? 'N/A',
                     'error_message' => $data['description'] ?? 'Unknown error',
@@ -185,6 +186,7 @@ class EmployeeController extends Controller
                 ]);
                 $data = json_decode($response->getBody(), true);
                 if (!$data['ok']) {
+                    ([
                         'response' => $data,
                         'error_code' => $data['error_code'] ?? 'N/A',
                         'error_message' => $data['description'] ?? 'Unknown error',
@@ -246,11 +248,13 @@ class EmployeeController extends Controller
                 $filePath = $data['result']['file_path'];
                 return "https://api.telegram.org/file/bot{$botToken}/{$filePath}";
             } else {
+                ([
                     'file_id' => $fileId,
                     'response' => $data,
                 ]);
             }
         } catch (RequestException $e) {
+            ([
                 'file_id' => $fileId,
                 'error' => $e->getMessage(),
             ]);
