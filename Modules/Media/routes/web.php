@@ -10,5 +10,4 @@ Route::group(['prefix' => 'media', 'as' => 'media.'], function () {
     Route::get('/{media}/edit', [MediaController::class, 'edit'])->name('edit');
     Route::put('/{media}', [MediaController::class, 'update'])->name('update');
     Route::delete('/{media}', [MediaController::class, 'destroy'])->name('destroy');
-    Route::post('/webhook', [MediaController::class, 'handleWebhook'])->name('webhook');
 });

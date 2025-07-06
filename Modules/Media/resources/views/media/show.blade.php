@@ -114,6 +114,12 @@
                             <i class="bi bi-pencil"></i> Edit Information
                         </a>
                         
+                        <a href="https://api.telegram.org/file/bot7738267715:AAGisTRywG6B0-Bwn-JW-tmiMAjFfTxLOdE/{{ $media->telegram_file_path }}" 
+                           target="_blank" 
+                           class="btn btn-success">
+                            <i class="bi bi-download"></i> Download File
+                        </a>
+                        
                         <form action="{{ route('media.destroy', $media->id) }}" 
                               method="POST" 
                               onsubmit="return confirm('Are you sure you want to delete \'{{ addslashes($media->title) }}\'? This action cannot be undone.')">
