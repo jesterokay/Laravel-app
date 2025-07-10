@@ -135,4 +135,42 @@ class ModuleManagementController extends Controller
 
         return redirect()->route('modulemanagement.index')->with('success', 'Module updated successfully.');
     }
+
+    public function edit(ModuleManagement $modulemanagement)
+    {
+        return view('modulemanagement::edit', compact('modulemanagement'));
+    }
+
+    public function update(Request $request, ModuleManagement $modulemanagement)
+    {
+        $validated = $request->validate([
+            'description' => 'nullable|string',
+            'enabled' => 'required|boolean',
+        ]);
+
+        $modulemanagement->update($validated);
+
+        $moduleJsonPath = base_path('Modules/' . $modulemanagement->name . '/module.json');
+        if (File::exists($moduleJsonPath)) {
+            $moduleJson = json_decode(File::get($moduleJsonPath), true);
+            $moduleJson['description'] = $validated['description'];
+            $moduleJson['enabled'] = (bool)$validated['enabled'];
+            File::put($moduleJsonPath, json_encode($moduleJson, JSON_PRETTY_PRINT));
+        }
+
+        return redirect()->route('modulemanagement.index')->with('success', 'Module updated successfully.');
+    }
+
+    public function destroy(ModuleManagement $modulemanagement)
+    {
+        $modulePath = base_path('Modules/' . $modulemanagement->name);
+
+        if (File::exists($modulePath)) {
+            File::deleteDirectory($modulePath);
+        }
+
+        $modulemanagement->delete();
+
+        return redirect()->route('modulemanagement.index')->with('success', 'Module deleted successfully.');
+    }
 }

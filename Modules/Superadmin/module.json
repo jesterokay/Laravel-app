@@ -1,0 +1,12 @@
+{
+    "name": "Superadmin",
+    "alias": "superadmin",
+    "description": "this module is for superadmin only.",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\Superadmin\\Providers\\SuperadminServiceProvider"
+    ],
+    "files": [],
+    "enabled": "1"
+}

@@ -74,6 +74,9 @@
                     <a href="#" class="d-block text-decoration-none text-dark py-2 px-1 rounded hover-bg-light">
                         <i class="fas fa-cog text-primary me-2"></i> Settings
                     </a>
+                    <a href="#" id="attendance-toggle-btn" class="d-block text-decoration-none text-dark py-2 px-1 rounded hover-bg-light">
+                        <i class="fas fa-fingerprint text-primary me-2"></i> Check In/Out
+                    </a>
                 </div>
 
                 <!-- Logout Button -->
@@ -109,6 +112,53 @@
             if (!$(e.target).closest('.modalProfile').length && !$(e.target).is('#profilePopup')) {
                 $(".modalProfile").slideUp("fast");
             }
+        });
+    });
+</script>
+
+<script type="module">
+    $(function() {
+        $('#attendance-toggle-btn').click(function(e) {
+            e.preventDefault();
+
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You are about to check in or out.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, proceed!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '{{ route("attendances.toggle.submit") }}',
+                        type: 'POST',
+                        data: {
+                            _token: '{{ csrf_token() }}',
+                        },
+                        success: function(response) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: response.message,
+                                showConfirmButton: false,
+                                timer: 1500
+                            });
+                            setTimeout(function() {
+                                location.reload();
+                            }, 1500);
+                        },
+                        error: function(response) {
+                            Swal.fire({
+                                icon: 'error',
+                                title: response.responseJSON.error,
+                                showConfirmButton: false,
+                                timer: 1500
+                            });
+                        }
+                    });
+                }
+            })
         });
     });
 </script>

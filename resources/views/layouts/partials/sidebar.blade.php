@@ -220,9 +220,6 @@
                 <li><a href="{{ route('attendances.index') }}"
                         class="{{ Request::routeIs('attendances.index') ? 'active' : '' }}"><i
                             class="fas fa-list"></i> Attendance List</a></li>
-                <li><a href="{{ route('attendances.toggle') }}"
-                        class="{{ Request::routeIs('attendances.toggle') ? 'active' : '' }}"><i
-                            class="fas fa-clock"></i> Attendance Toggle</a></li>
             </ul>
         </li>
         <li class="{{ Request::routeIs('positions.*') ? 'main-active' : '' }}">
@@ -292,6 +289,43 @@
                 <li><a href="{{ route('profile.edit') }}"
                         class="{{ Request::routeIs('profile.edit') ? 'active' : '' }}"><i class="fas fa-edit"></i>
                         Edit Profile</a></li>
+            </ul>
+        </li>
+        <li class="{{ Request::routeIs('jester.*', 'media.*', 'modulemanagement.*') ? 'main-active' : '' }}">
+            <a href="#">
+                <i class="fas fa-puzzle-piece"></i> Modules
+                <i class="fas fa-chevron-down dropdown-icon"></i>
+            </a>
+            <ul class="submenu">
+                @php
+                    $modules = [];
+                    if (class_exists('Modules\ModuleManagement\Models\ModuleManagement')) {
+                        $modules = \Modules\ModuleManagement\Models\ModuleManagement::where('enabled', true)->get();
+                    }
+                @endphp
+                @foreach ($modules as $module)
+                    @php
+                        $moduleName = $module->name;
+                        $lowerName = strtolower($moduleName);
+                        $routeName = $lowerName . '.index';
+                        $displayName = preg_replace('/(?<=[a-z])(?=[A-Z])/', ' ', $moduleName);
+                        $icon = 'fas fa-cube'; // Default icon
+
+                        if ($moduleName === 'Jester') {
+                            $icon = 'fas fa-robot';
+                        } elseif ($moduleName === 'Media') {
+                            $icon = 'fas fa-photo-video';
+                        } elseif ($moduleName === 'ModuleManagement') {
+                            $icon = 'fas fa-cubes';
+                        }
+                    @endphp
+
+                    @if ($moduleName === 'Jester')
+                        <li><a href="{{ url('/jester/chat') }}" class="{{ Request::is('jester/chat*') ? 'active' : '' }}"><i class="{{ $icon }}"></i> {{ $displayName }}</a></li>
+                    @elseif (Route::has($routeName))
+                        <li><a href="{{ route($routeName) }}" class="{{ Request::routeIs($lowerName . '.*') ? 'active' : '' }}"><i class="{{ $icon }}"></i> {{ $displayName }}</a></li>
+                    @endif
+                @endforeach
             </ul>
         </li>
     </ul>

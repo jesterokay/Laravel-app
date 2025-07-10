@@ -77,12 +77,13 @@ Route::middleware('user-auth')->group(function () {
 
     Route::controller(AttendanceController::class)->group(function () {
         Route::get('/attendances', 'index')->name('attendances.index');
-        Route::get('/attendances/toggle', 'showTogglePage')->name('attendances.toggle');
-        Route::post('/attendances/toggle', 'toggleCheckInOut')->name('attendances.toggle.submit');
+        Route::get('/attendances/create', 'create')->name('attendances.create');
+        Route::post('/attendances', 'store')->name('attendances.store');
+        Route::post('/attendances/toggle', 'toggle')->name('attendances.toggle.submit');
         Route::get('/attendances/{id}', 'show')->name('attendances.show');
         Route::get('/attendances/{id}/edit', 'edit')->name('attendances.edit');
         Route::put('/attendances/{id}', 'update')->name('attendances.update');
-        Route::get('/attendances/scan-checkin', 'scanCheckIn')->name('attendances.scan-checkin');
+        Route::delete('/attendances/{id}', 'destroy')->name('attendances.destroy');
     });
 
     Route::get('profile', [ProfileController::class, 'edit'])->name('profile.edit');

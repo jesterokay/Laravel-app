@@ -80,8 +80,8 @@ class ChatController extends Controller
                 ];
             }, $messages);
 
-            $model = 'gemini-1.5-flash-latest';
-            $apiKey = env('GOOGLE_API_KEY', 'AIzaSyDjkRrReRaUV888Aj9LPEktT1c-vMrTJK0');
+            $model = 'gemini-2.5-flash-lite-preview-06-17';
+            $apiKey = env('GOOGLE_API_KEY', 'AIzaSyCT56AEcOB2UodPn7M4u_4JpNQSS42UbR8');
             $url = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key=" . $apiKey;
 
             $body = [
