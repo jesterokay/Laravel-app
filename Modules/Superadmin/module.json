@@ -1,7 +1,7 @@
 {
     "name": "Superadmin",
     "alias": "superadmin",
-    "description": "this module is for superadmin only.",
+    "description": "testing purpose",
     "keywords": [],
     "priority": 0,
     "providers": [

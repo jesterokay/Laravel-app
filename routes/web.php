@@ -1,31 +1,31 @@
 <?php
 
 use App\Http\Middleware\UserAuthentication;
-use App\Http\Controllers\LoginController;
-use App\Http\Controllers\CategoryController;
-use App\Http\Controllers\CurrencyController;
-use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Inventory\CategoryController;
+use App\Http\Controllers\System\CurrencyController;
+use App\Http\Controllers\CRM\CustomerController;
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\ImpersonateController;
-use App\Http\Controllers\EmployeeController;
-use App\Http\Controllers\ExpenseController;
-use App\Http\Controllers\InventorySummaryController;
-use App\Http\Controllers\PaymentMethodController;
-use App\Http\Controllers\ProductController;
-use App\Http\Controllers\PurchaseController;
-use App\Http\Controllers\SaleController;
-use App\Http\Controllers\SalesSummaryController;
-use App\Http\Controllers\SupplierController;
-use App\Http\Controllers\TaxRateController;
-use App\Http\Controllers\UnitController;
-use App\Http\Controllers\AttendanceController;
-use App\Http\Controllers\PositionController;
-use App\Http\Controllers\DepartmentController;
-use App\Http\Controllers\RoleController;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\PermissionController;
-use App\Http\Controllers\PromotionController;
-use App\Http\Controllers\DiscountController;
+use App\Http\Controllers\Auth\ImpersonateController;
+use App\Http\Controllers\HR\EmployeeController;
+use App\Http\Controllers\Finance\ExpenseController;
+use App\Http\Controllers\Inventory\InventorySummaryController;
+use App\Http\Controllers\Finance\PaymentMethodController;
+use App\Http\Controllers\Inventory\ProductController;
+use App\Http\Controllers\Purchases\PurchaseController;
+use App\Http\Controllers\Sales\SaleController;
+use App\Http\Controllers\Sales\SalesSummaryController;
+use App\Http\Controllers\CRM\SupplierController;
+use App\Http\Controllers\Finance\TaxRateController;
+use App\Http\Controllers\Inventory\UnitController;
+use App\Http\Controllers\HR\AttendanceController;
+use App\Http\Controllers\HR\PositionController;
+use App\Http\Controllers\HR\DepartmentController;
+use App\Http\Controllers\System\RoleController;
+use App\Http\Controllers\Auth\ProfileController;
+use App\Http\Controllers\System\PermissionController;
+use App\Http\Controllers\Sales\PromotionController;
+use App\Http\Controllers\Sales\DiscountController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/login', function () {

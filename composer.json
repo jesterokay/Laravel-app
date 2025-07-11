@@ -28,7 +28,10 @@
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/",
             "Modules\\": "Modules/"
-        }
+        },
+        "exclude-from-classmap": [
+            "Modules/*/Database/Migrations/*.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {
