@@ -3,5 +3,6 @@
     "Jester": true,
     "Media": true,
     "TestCreateNewModule": true,
-    "Superadmin": true
+    "Superadmin": true,
+    "MiniApp": true
 }
