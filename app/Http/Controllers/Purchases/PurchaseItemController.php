@@ -9,7 +9,7 @@ use App\Models\Product;
 use App\Models\TaxRate;
 use Illuminate\Http\Request;
 
-class PurchaseItemController extends Controller extends Controller
+class PurchaseItemController extends Controller
 {
     public function index()
     {

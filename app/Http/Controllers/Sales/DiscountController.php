@@ -6,16 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Discount;
 use Illuminate\Http\Request;
 
-class DiscountController extends Controller extends Controller
+class DiscountController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware(['permission:view-discounts'])->only(['index', 'show']);
-        $this->middleware(['permission:create-discounts'])->only(['create', 'store']);
-        $this->middleware(['permission:edit-discounts'])->only(['edit', 'update']);
-        $this->middleware(['permission:delete-discounts'])->only(['destroy']);
-    }
-
     public function index()
     {
         $discounts = Discount::all();

@@ -8,7 +8,7 @@ use App\Models\Sale;
 use App\Models\Product;
 use Illuminate\Http\Request;
 
-class SaleItemController extends Controller extends Controller
+class SaleItemController extends Controller
 {
     public function index()
     {
