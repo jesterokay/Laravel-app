@@ -12,9 +12,9 @@
                 <p><strong>Stock Quantity:</strong> {{ $product->stock_quantity }}</p>
                 <p><strong>SKU:</strong> {{ $product->sku ?? 'N/A' }}</p>
                 <p><strong>Barcode:</strong> {{ $product->barcode ?? 'N/A' }}</p>
-                @if ($imageUrl)
+                @if ($product->image)
                     <p><strong>Image:</strong></p>
-                    <img src="{{ $imageUrl }}" alt="{{ $product->name }}" class="w-32 h-32 object-cover">
+                    <img src="{{ Storage::url($product->image) }}" alt="{{ $product->name }}" class="w-32 h-32 object-cover">
                 @endif
                 <div class="mt-4">
                     @can('edit-products')

@@ -148,8 +148,7 @@
     <div class="mb-3">
         <label for="image" class="form-label">Profile Image</label>
         <input type="file" name="image" id="image" class="form-control" accept="image/jpeg,image/png,image/gif">
-        @if(isset($employee) && $employee->image && isset($imageUrl))
-            <img src="{{ $imageUrl }}" alt="Current Image" class="img-thumbnail mt-2" style="max-width: 150px;">
+        @if(isset($employee) && $employee->image)
             <p class="mt-2">Current Image Stored in Telegram</p>
         @endif
         @error('image')

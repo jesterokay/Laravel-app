@@ -1,0 +1,12 @@
+{
+    "name": "MiniApp",
+    "alias": "miniapp",
+    "description": "module create module",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\MiniApp\\Providers\\MiniAppServiceProvider"
+    ],
+    "files": [],
+    "enabled": "1"
+}

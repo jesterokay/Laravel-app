@@ -33,11 +33,6 @@ class EmployeeController extends Controller
 
         $employees = $query->paginate(10);
 
-        $employees->getCollection()->transform(function ($employee) {
-            $employee->imageUrl = $this->getTelegramImageUrl($employee->image);
-            return $employee;
-        });
-
         return view('employees.index', compact('employees'));
     }
 
@@ -137,8 +132,7 @@ class EmployeeController extends Controller
         $departments = Department::all();
         $positions = Position::all();
         $spatieRoles = SpatieRole::where('name', '!=', 'superadmin')->get();
-        $imageUrl = $this->getTelegramImageUrl($employee->image);
-        return view('employees.edit', compact('employee', 'departments', 'positions', 'spatieRoles', 'imageUrl'));
+        return view('employees.edit', compact('employee', 'departments', 'positions', 'spatieRoles'));
     }
 
     public function update(Request $request, Employee $employee)

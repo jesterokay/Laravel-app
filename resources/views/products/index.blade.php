@@ -10,7 +10,6 @@
             <table class="min-w-full bg-white border">
                 <thead>
                     <tr>
-                        <th class="py-2 px-4 border-b">Image</th>
                         <th class="py-2 px-4 border-b">Name</th>
                         <th class="py-2 px-4 border-b">Category</th>
                         <th class="py-2 px-4 border-b">Price</th>
@@ -21,11 +20,6 @@
                 <tbody>
                     @foreach ($products as $product)
                         <tr>
-                            <td class="py-2 px-4 border-b">
-                                @if ($product->imageUrl)
-                                    <img src="{{ $product->imageUrl }}" alt="{{ $product->name }}" class="w-16 h-16 object-cover">
-                                @endif
-                            </td>
                             <td class="py-2 px-4 border-b">{{ $product->name }}</td>
                             <td class="py-2 px-4 border-b">{{ $product->category->name }}</td>
                             <td class="py-2 px-4 border-b">{{ $product->price }}</td>

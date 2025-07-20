@@ -43,18 +43,19 @@ class ModuleManagementController extends Controller
         // Move everything from app to root and remove app directory
         $appPath = $modulePath . '/app';
         if (File::exists($appPath) && File::isDirectory($appPath)) {
-            // Create Models directory and move the existing model file
-            $modelsPath = $modulePath . '/Models';
-            File::makeDirectory($modelsPath, 0755, true);
-            
-            $modelFile = $appPath . '/Models/' . $moduleName . '.php';
-            if (File::exists($modelFile)) {
-                File::move($modelFile, $modelsPath . '/' . $moduleName . '.php');
-            }
             // Move all contents (files and directories) from app to root
             File::copyDirectory($appPath, $modulePath);
             // Delete the app directory and its contents
             File::deleteDirectory($appPath);
+        }
+
+        // Create Models directory and move the existing model file
+        $modelsPath = $modulePath . '/Models';
+        File::makeDirectory($modelsPath, 0755, true);
+        
+        $modelFile = $modulePath . '/' . $moduleName . '.php';
+        if (File::exists($modelFile)) {
+            File::move($modelFile, $modelsPath . '/' . $moduleName . '.php');
         }
 
         // Update module.json

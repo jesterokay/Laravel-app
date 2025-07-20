@@ -10,14 +10,6 @@
                 <input type="text" name="name" id="name" class="form-control" required>
             </div>
             <div class="mb-3">
-                <label for="product_id" class="form-label">Product</label>
-                <select name="product_id" id="product_id" class="form-control" required>
-                    @foreach($products as $product)
-                        <option value="{{ $product->id }}">{{ $product->name }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="mb-3">
                 <label for="type" class="form-label">Type</label>
                 <select name="type" id="type" class="form-control" required>
                     <option value="percentage">Percentage</option>
@@ -46,6 +38,10 @@
                     <option value="product">Product</option>
                     <option value="sale">Sale</option>
                 </select>
+            </div>
+            <div class="mb-3">
+                <label for="conditions" class="form-label">Conditions (JSON)</label>
+                <textarea name="conditions" id="conditions" class="form-control"></textarea>
             </div>
             <button type="submit" class="btn btn-primary">Create</button>
         </form>

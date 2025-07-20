@@ -97,7 +97,7 @@ class CustomerController extends Controller
 
         $imageUrl = $this->getTelegramImageUrl($customer->image);
 
-        $customer->load(['leads', 'contacts', 'tasks', 'followUps', 'sales']);
+        $customer->load(['leads', 'contacts', 'tasks', 'followUps']);
         return view('customers.show', compact('customer', 'imageUrl'));
     }
 

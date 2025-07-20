@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Spatie\Permission\Traits\HasRoles;
-use Illuminate\Support\Facades\Http;
 
 class Employee extends Authenticatable
 {
@@ -36,30 +35,7 @@ class Employee extends Authenticatable
 
     public function getImageUrlAttribute()
     {
-        if (!$this->image) {
-            return null;
-        }
-
-        $botToken = env('TELEGRAM_BOT_TOKEN');
-        if (!$botToken) {
-            return null;
-        }
-
-        try {
-            $response = Http::get("https://api.telegram.org/bot{$botToken}/getFile", [
-                'file_id' => $this->image,
-            ]);
-
-            if ($response->successful() && $response->json('ok')) {
-                $filePath = $response->json('result.file_path');
-                return "https://api.telegram.org/file/bot{$botToken}/{$filePath}";
-            }
-        } catch (\Exception $e) {
-            // Log the error or handle it as needed
-            return null;
-        }
-
-        return null;
+        return $this->image ?? null;
     }
 
     public function department()

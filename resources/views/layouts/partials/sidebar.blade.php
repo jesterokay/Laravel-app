@@ -1,31 +1,5 @@
 <aside class="sidebar">
-    <div class="sidebar-brand">
-        @php
-            $user = Auth::user();
-            $imageUrl = null;
-            if ($user->image) {
-                try {
-                    $client = new \GuzzleHttp\Client();
-                    $botToken = '7738267715:AAGisTRywG6B0-Bwn-JW-tmiMAjFfTxLOdE';
-                    $response = $client->get("https://api.telegram.org/bot{$botToken}/getFile", [
-                        'query' => ['file_id' => $user->image],
-                        'timeout' => 10,
-                    ]);
-                    $data = json_decode($response->getBody(), true);
-                    if ($data['ok']) {
-                        $filePath = $data['result']['file_path'];
-                        $imageUrl = "https://api.telegram.org/file/bot{$botToken}/{$filePath}";
-                    }
-                } catch (\Exception $e) {
-                    // Log error or handle gracefully
-                }
-            }
-        @endphp
-        @if ($imageUrl)
-            <img src="{{ $imageUrl }}" alt="Profile" class="w-10 h-10 rounded-full inline-block mr-2">
-        @endif
-        <a href="/">{{ auth()->user()->username }}</a>
-    </div>
+    <div class="sidebar-brand"><a href="/">{{ auth()->user()->username }}</a></div>
     <ul>
         <!-- Dashboard -->
         <li class="{{ Request::routeIs('home') ? 'main-active' : '' }}">

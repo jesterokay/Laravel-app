@@ -4,6 +4,5 @@
     "Media": true,
     "TestCreateNewModule": true,
     "Superadmin": true,
-    "MiniApp": true,
-    "TestNewModule": true
+    "MiniApp": true
 }
