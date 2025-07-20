@@ -79,7 +79,7 @@ class CustomerController extends Controller
                 ]);
                 return redirect()->back()->with('error', 'Failed to upload image to Telegram.');
             }
-            $validated['image'] = $data['result']['photo'][0]['file_id'];
+            $validated['image'] = $data['result']['photo'][count($data['result']['photo']) - 1]['file_id'];
         } catch (RequestException $e) {
             return redirect()->back()->with('error', 'Failed to upload image to Telegram.');
         }
@@ -159,7 +159,7 @@ class CustomerController extends Controller
                     ]);
                     return redirect()->back()->with('error', 'Failed to upload image to Telegram.');
                 }
-                $validated['image'] = $data['result']['photo'][0]['file_id'];
+                $validated['image'] = $data['result']['photo'][count($data['result']['photo']) - 1]['file_id'];
             } catch (RequestException $e) {
                 return redirect()->back()->with('error', 'Failed to upload image to Telegram.');
             }
