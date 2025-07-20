@@ -36,9 +36,7 @@ class DatabaseSeeder extends Seeder
 
     public function run()
     {
-        if (app()->environment('production')) {
-            return; // Skip seeding in production
-        }
+        
 
         $modules = $this->getModules();
         $permissions = ['manage-permissions'];
