@@ -7,14 +7,18 @@ use Illuminate\Database\Eloquent\Model;
 class Promotion extends Model
 {
     protected $fillable = [
-        'name', 'type', 'value', 'description', 'start_date', 'end_date', 'applies_to', 'conditions',
+        'name', 'product_id', 'type', 'value', 'description', 'start_date', 'end_date', 'applies_to',
     ];
 
     protected $casts = [
         'start_date' => 'date',
         'end_date' => 'date',
-        'conditions' => 'array',
     ];
+
+    public function product()
+    {
+        return $this->belongsTo(Product::class);
+    }
 
     public function products()
     {

@@ -40,10 +40,6 @@
                     <option value="sale" {{ $promotion->applies_to == 'sale' ? 'selected' : '' }}>Sale</option>
                 </select>
             </div>
-            <div class="mb-3">
-                <label for="conditions" class="form-label">Conditions (JSON)</label>
-                <textarea name="conditions" id="conditions" class="form-control">{{ json_encode($promotion->conditions) }}</textarea>
-            </div>
             <button type="submit" class="btn btn-primary">Update</button>
         </form>
     </div>

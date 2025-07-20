@@ -89,3 +89,12 @@ Route::middleware('user-auth')->group(function () {
     Route::get('profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('profile', [ProfileController::class, 'update'])->name('profile.update');
 });
+
+Route::get('/test-db', function () {
+    try {
+        \DB::connection()->getPdo();
+        return "Database connection successful!";
+    } catch (\Exception $e) {
+        return "Database connection failed: " . $e->getMessage();
+    }
+});

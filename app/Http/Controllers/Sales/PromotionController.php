@@ -16,20 +16,21 @@ class PromotionController extends Controller
 
     public function create()
     {
-        return view('promotions.create');
+        $products = \App\Models\Product::all();
+        return view('promotions.create', compact('products'));
     }
 
     public function store(Request $request)
     {
         $request->validate([
             'name' => 'required|string|max:255',
+            'product_id' => 'required|exists:products,id',
             'type' => 'required|in:percentage,buy_x_get_y',
             'value' => 'nullable|numeric|min:0',
             'description' => 'nullable|string',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
             'applies_to' => 'required|in:product,sale',
-            'conditions' => 'nullable|json',
         ]);
 
         Promotion::create($request->all());
@@ -56,7 +57,6 @@ class PromotionController extends Controller
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
             'applies_to' => 'required|in:product,sale',
-            'conditions' => 'nullable|json',
         ]);
 
         $promotion->update($request->all());

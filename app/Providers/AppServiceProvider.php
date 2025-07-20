@@ -35,5 +35,7 @@ class AppServiceProvider extends ServiceProvider
         if (env('APP_ENV') === 'production') {
             URL::forceScheme('https');
         }        
+
+        $this->loadMigrationsFrom(base_path('Modules/ModuleManagement/database/migrations'));
     }
 }

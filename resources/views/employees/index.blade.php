@@ -14,6 +14,7 @@
     <table class="table table-striped">
         <thead>
             <tr>
+                <th>Image</th>
                 <th>Name</th>
                 <th>Email</th>
                 <th>Department</th>
@@ -25,6 +26,11 @@
         <tbody>
             @foreach ($employees as $employee)
                 <tr>
+                    <td>
+                        @if ($employee->imageUrl)
+                            <img src="{{ $employee->imageUrl }}" alt="{{ $employee->first_name }}" class="w-16 h-16 object-cover">
+                        @endif
+                    </td>
                     <td>{{ $employee->first_name }} {{ $employee->last_name }}</td>
                     <td>{{ $employee->email ?? '-' }}</td>
                     <td>{{ $employee->department ? $employee->department->name : '-' }}</td>

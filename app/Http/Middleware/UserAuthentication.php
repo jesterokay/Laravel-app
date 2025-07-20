@@ -10,7 +10,7 @@ class UserAuthentication
 {
     public function handle(Request $request, Closure $next)
     {
-        if (!Auth::check()) {
+        if (!Auth::check() && !app()->runningInConsole()) {
             return redirect()->route('login');
         }
         return $next($request);

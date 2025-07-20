@@ -10,23 +10,18 @@ services:
       - key: APP_DEBUG
         value: false
       - key: APP_KEY
-        value: base64:YOUR_GENERATED_KEY
+        generateValue: true
       - key: DB_CONNECTION
         value: mysql
-      - key: DB_HOST
-        sync: false
-        value: ${{ MySQL.MYSQLHOST }}
-      - key: DB_PORT
-        sync: false
-        value: ${{ MySQL.MYSQLPORT }}
-      - key: DB_DATABASE
-        sync: false
-        value: ${{ MySQL.MYSQLDATABASE }}
-      - key: DB_USERNAME
-        sync: false
-        value: ${{ MySQL.MYSQLUSER }}
-      - key: DB_PASSWORD
-        sync: false
-        value: ${{ MySQL.MYSQLPASSWORD }}
-      - key: MYSQL_ATTR_SSL_CA
-        value: /etc/ssl/certs/ca-certificates.crt
+      - fromGroup: database-credentials
+      - key: DB_SSL_CA
+        value: /etc/secrets/ca.pem
+    secretFiles:
+      - name: ca.pem
+        mountPath: /etc/secrets/ca.pem
+
+databases:
+  - name: MySQL
+    databaseName: ${{MySQL.MYSQLDATABASE}}
+    user: ${{MySQL.MYSQLUSER}}
+    plan: free

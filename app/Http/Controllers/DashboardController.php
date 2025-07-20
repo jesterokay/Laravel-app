@@ -27,7 +27,7 @@ class DashboardController extends Controller
             ->get();
 
         $yearlySales = Sale::select(
-            DB::raw("DATE_FORMAT(created_at, '%Y') as year"),
+            DB::raw("YEAR(created_at) as year"),
             DB::raw('SUM(total_amount) as total')
         )
             ->groupBy('year')

@@ -9,7 +9,7 @@ class PositionSeeder extends Seeder
 {
     public function run(): void
     {
-        Position::create(['name' => 'Manager', 'description' => 'Manages teams']);
-        Position::create(['name' => 'Developer', 'description' => 'Develops software']);
+        Position::firstOrCreate(['name' => 'Manager'], ['description' => 'Manages teams']);
+        Position::firstOrCreate(['name' => 'Developer'], ['description' => 'Develops software']);
     }
 }
