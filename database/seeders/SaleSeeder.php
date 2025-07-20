@@ -11,10 +11,10 @@ class SaleSeeder extends Seeder
 {
     public function run()
     {
-        // Use factory for 10 records with unique invoice numbers
-        Sale::factory()->count(1)->sequence(function ($sequence) {
+        // Create single record with unique invoice number
+        Sale::factory()->sequence(function ($sequence) {
             $latestSale = Sale::latest()->first();
-            $nextId = $latestSale ? $latestSale->id + $sequence->index + 1 : $sequence->index + 1;
+            $nextId = $latestSale ? $latestSale->id + 1 : 1;
             return [
                 'invoice_number' => 'INV-' . str_pad($nextId, 4, '0', STR_PAD_LEFT),
             ];

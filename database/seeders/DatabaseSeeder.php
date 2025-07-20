@@ -166,7 +166,7 @@ class DatabaseSeeder extends Seeder
             TaxRateSeeder::class,
             UnitSeeder::class,
             PaymentMethodSeeder::class,
-            PositionSeeder::class,
+            
             DepartmentSeeder::class,
             RoleSeeder::class,
         ]);

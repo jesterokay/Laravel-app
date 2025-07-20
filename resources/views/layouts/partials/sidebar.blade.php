@@ -108,11 +108,13 @@
                 @endif
 
                 @php
-                    $modules = [];
-                    if (class_exists('Modules\ModuleManagement\Models\ModuleManagement')) {
-                        $modules = \Modules\ModuleManagement\Models\ModuleManagement::where('enabled', true)
-                                    ->whereNotIn('name', ['Jester', 'Media', 'ModuleManagement'])
-                                    ->get();
+                    try {
+                        $modules = \App\Models\ModuleManagement::where('enabled', true)
+                            ->whereNotIn('name', ['Jester', 'Media', 'ModuleManagement'])
+                            ->orderBy('order')
+                            ->get();
+                    } catch (\Exception $e) {
+                        $modules = collect([]); // Return empty collection if table doesn't exist
                     }
                 @endphp
                 @foreach ($modules as $module)

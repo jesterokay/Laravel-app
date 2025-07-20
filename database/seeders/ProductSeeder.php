@@ -18,8 +18,8 @@ class ProductSeeder extends Seeder
             return;
         }
 
-        Product::factory()->count(50)->make()->each(function ($product) use ($categories) {
-            $product->category_id = $categories->random()->id;
+        Product::factory()->make()->each(function ($product) use ($categories) {
+            $product->category_id = $categories->first()->id;
             $product->save();
         });
     }

@@ -10,6 +10,6 @@ class SalesSummarySeeder extends Seeder
 {
     public function run()
     {
-        SalesSummary::factory()->count(1)->create();
+        SalesSummary::factory()->count(2)->create();
     }
 }

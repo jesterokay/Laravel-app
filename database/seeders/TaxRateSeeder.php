@@ -11,19 +11,11 @@ class TaxRateSeeder extends Seeder
     public function run()
     {
 
-        $taxRates = [
-            ['rate' => 5, 'name' => '5% Tax'],
-            ['rate' => 10, 'name' => '10% Tax'],
-            ['rate' => 15, 'name' => '15% Tax'],
-        ];
-
-        foreach ($taxRates as $tax) {
-            TaxRate::firstOrCreate(
-                ['rate' => $tax['rate']],
-                [
-                    'name' => $tax['name'],
-                ]
-            );
-        }
+        TaxRate::firstOrCreate(
+            ['rate' => 5],
+            [
+                'name' => '5% Tax',
+            ]
+        );
     }
 }
