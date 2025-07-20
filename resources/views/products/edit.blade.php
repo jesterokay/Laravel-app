@@ -48,7 +48,7 @@
             <div class="mb-4">
                 <label class="block text-sm font-medium">Image</label>
                 @if ($product->image)
-                    <img src="{{ Storage::url($product->image) }}" alt="{{ $product->name }}" class="w-32 h-32 object-cover mb-2">
+                    <img src="{{ $imageUrl }}" alt="{{ $product->name }}" class="w-32 h-32 object-cover mb-2">
                 @endif
                 <input type="file" name="image" class="mt-1 block w-full border rounded p-2">
                 @error('image') <span class="text-red-500">{{ $message }}</span> @enderror

@@ -94,7 +94,8 @@ class ProductController extends Controller
     public function edit(Product $product)
     {
         $categories = Category::all();
-        return view('products.edit', compact('product', 'categories'));
+        $imageUrl = $this->getTelegramImageUrl($product->image);
+        return view('products.edit', compact('product', 'categories', 'imageUrl'));
     }
 
     public function update(Request $request, Product $product)
