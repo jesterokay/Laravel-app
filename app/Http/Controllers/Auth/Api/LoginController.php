@@ -17,7 +17,6 @@ class LoginController extends Controller
 
         // Check by name, username, or email
         $user = DB::table('employees')
-            ->where('name', $usernameOrEmail)
             ->orWhere('username', $usernameOrEmail)
             ->orWhere('email', $usernameOrEmail)
             ->first();
