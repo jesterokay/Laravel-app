@@ -14,6 +14,16 @@ class ModuleManagementController extends Controller
     public function index()
     {
         $modules = ModuleManagement::all();
+        $statusesFile = base_path('modules_statuses.json');
+        $statuses = [];
+        if (File::exists($statusesFile)) {
+            $statuses = json_decode(File::get($statusesFile), true);
+        }
+
+        foreach ($modules as $module) {
+            $module->enabled = $statuses[$module->name] ?? false;
+        }
+
         return view('modulemanagement::index', compact('modules'));
     }
 
@@ -43,6 +53,33 @@ class ModuleManagementController extends Controller
             'name' => 'create_' . strtolower($moduleName) . '_table',
             'module' => $moduleName
         ]);
+
+        // Create a beautiful index.blade.php
+        $viewPath = $modulePath . '/resources/views/index.blade.php';
+        $viewContent = <<<EOD
+@extends('layouts.app')
+
+@section('content')
+<div class="container mx-auto px-4 py-8">
+    <div class="bg-white shadow-md rounded-lg">
+        <div class="p-6 border-b border-gray-200">
+            <h1 class="text-2xl font-semibold text-gray-700">Welcome to the {$moduleName} Module</h1>
+            <p class="mt-2 text-gray-600">This is the index page for the {$moduleName} module.</p>
+        </div>
+        <div class="p-6">
+            <p class="text-gray-700">
+                This view is located at <code>resources/views/index.blade.php</code>
+                in the <code>{$moduleName}</code> module.
+            </p>
+            <div class="mt-6">
+                <a href="{{ route('home') }}" class="text-indigo-600 hover:text-indigo-900">Dashboard</a>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection
+EOD;
+        File::put($viewPath, $viewContent);
 
         // Rename Database and subfolders to lowercase
         $databasePath = $modulePath . '/Database';
@@ -103,9 +140,17 @@ class ModuleManagementController extends Controller
         if (File::exists($moduleJsonPath)) {
             $moduleJson = json_decode(File::get($moduleJsonPath), true);
             $moduleJson['description'] = $validated['description'];
-            $moduleJson['enabled'] = $validated['enabled'];
             File::put($moduleJsonPath, json_encode($moduleJson, JSON_PRETTY_PRINT));
         }
+
+        // Update modules_statuses.json
+        $statusesFile = base_path('modules_statuses.json');
+        $statuses = [];
+        if (File::exists($statusesFile)) {
+            $statuses = json_decode(File::get($statusesFile), true);
+        }
+        $statuses[$moduleName] = (bool)$validated['enabled'];
+        File::put($statusesFile, json_encode($statuses, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
 
         ModuleManagement::create($validated);
 
@@ -172,6 +217,16 @@ class ModuleManagementController extends Controller
 
     public function edit(ModuleManagement $modulemanagement)
     {
+        $statusesFile = base_path('modules_statuses.json');
+        $statuses = [];
+        if (File::exists($statusesFile)) {
+            $statuses = json_decode(File::get($statusesFile), true);
+        }
+
+        // Overwrite the enabled status with the one from the JSON file
+        // to ensure the form shows the true current state.
+        $modulemanagement->enabled = $statuses[$modulemanagement->name] ?? false;
+
         return view('modulemanagement::edit', compact('modulemanagement'));
     }
 
@@ -184,13 +239,22 @@ class ModuleManagementController extends Controller
 
         $modulemanagement->update($validated);
 
+        // Update module.json
         $moduleJsonPath = base_path('Modules/' . $modulemanagement->name . '/module.json');
         if (File::exists($moduleJsonPath)) {
             $moduleJson = json_decode(File::get($moduleJsonPath), true);
             $moduleJson['description'] = $validated['description'];
-            $moduleJson['enabled'] = (bool)$validated['enabled'];
             File::put($moduleJsonPath, json_encode($moduleJson, JSON_PRETTY_PRINT));
         }
+
+        // Update modules_statuses.json
+        $statusesFile = base_path('modules_statuses.json');
+        $statuses = [];
+        if (File::exists($statusesFile)) {
+            $statuses = json_decode(File::get($statusesFile), true);
+        }
+        $statuses[$modulemanagement->name] = (bool)$validated['enabled'];
+        File::put($statusesFile, json_encode($statuses, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
 
         return redirect()->route('modulemanagement.index')->with('success', 'Module updated successfully.');
     }
@@ -217,5 +281,25 @@ class ModuleManagementController extends Controller
         }
 
         return redirect()->route('modulemanagement.index')->with('success', 'Module deleted successfully.');
+    }
+
+    public function toggle(ModuleManagement $modulemanagement)
+    {
+        $statusesFile = base_path('modules_statuses.json');
+        $statuses = [];
+        if (File::exists($statusesFile)) {
+            $statuses = json_decode(File::get($statusesFile), true);
+        }
+
+        $moduleName = $modulemanagement->name;
+        $newStatus = !($statuses[$moduleName] ?? false);
+        $statuses[$moduleName] = $newStatus;
+
+        File::put($statusesFile, json_encode($statuses, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+
+        // Also update the database to keep it in sync
+        $modulemanagement->update(['enabled' => $newStatus]);
+
+        return redirect()->route('modulemanagement.index')->with('success', 'Module status updated successfully.');
     }
 }
