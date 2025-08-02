@@ -1,8 +1,5 @@
 {
     "ModuleManagement": true,
     "Jester": true,
-    "Media": true,
-    "TestCreateNewModule": true,
-    "Superadmin": true,
-    "MiniApp": true
+    "Media": true
 }

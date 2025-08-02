@@ -93,43 +93,36 @@
         </li>
 
         <!-- Modules -->
-        <li class="{{ Request::routeIs(['jester.*', 'media.*', 'modulemanagement.*', 'superadmin.*']) ? 'main-active' : '' }}">
+        @php
+            $modules = array_map('basename', glob(base_path('Modules/*'), GLOB_ONLYDIR));
+            $routePatterns = array_map(fn($module) => strtolower($module) . '.*', $modules);
+        @endphp
+        <li class="{{ Request::routeIs($routePatterns) ? 'main-active' : '' }}">
             <a href="#">
                 <i class="fas fa-puzzle-piece"></i> Modules
                 <i class="fas fa-chevron-down dropdown-icon"></i>
             </a>
             <ul class="submenu">
-                <li><a href="{{ url('/jester/chat') }}" class="{{ Request::is('jester/chat*') ? 'active' : '' }}"><i class="fas fa-robot"></i> Jester</a></li>
-                @if (Route::has('media.index'))
-                    <li><a href="{{ route('media.index') }}" class="{{ Request::routeIs('media.*') ? 'active' : '' }}"><i class="fas fa-photo-video"></i> Media</a></li>
-                @endif
-                @if (Route::has('modulemanagement.index'))
-                    <li><a href="{{ route('modulemanagement.index') }}" class="{{ Request::routeIs('modulemanagement.*') ? 'active' : '' }}"><i class="fas fa-cubes"></i> Module Management</a></li>
-                @endif
-
-                @php
-                    try {
-                        $modules = \App\Models\ModuleManagement::where('enabled', true)
-                            ->whereNotIn('name', ['Jester', 'Media', 'ModuleManagement'])
-                            ->orderBy('order')
-                            ->get();
-                    } catch (\Exception $e) {
-                        $modules = collect([]); // Return empty collection if table doesn't exist
-                    }
-                @endphp
                 @foreach ($modules as $module)
                     @php
-                        $moduleName = $module->name;
-                        $lowerName = strtolower($moduleName);
+                        $lowerName = strtolower($module);
                         $routeName = $lowerName . '.index';
-                        $displayName = preg_replace('/(?<=[a-z])(?=[A-Z])/', ' ', $moduleName);
+                        $displayName = preg_replace('/(?<=[a-z])(?=[A-Z])/', ' ', $module);
                         $icon = 'fas fa-cube'; // Default icon
-                        if ($moduleName === 'Superadmin') {
+                        if ($module === 'Jester') {
+                            $icon = 'fas fa-robot';
+                        } elseif ($module === 'Media') {
+                            $icon = 'fas fa-photo-video';
+                        } elseif ($module === 'ModuleManagement') {
+                            $icon = 'fas fa-cubes';
+                        } elseif ($module === 'Superadmin') {
                             $icon = 'fas fa-user-shield';
                         }
                     @endphp
 
-                    @if (Route::has($routeName))
+                    @if ($module === 'Jester')
+                        <li><a href="{{ url('/jester/chat') }}" class="{{ Request::is('jester/chat*') ? 'active' : '' }}"><i class="{{ $icon }}"></i> {{ $displayName }}</a></li>
+                    @elseif (Route::has($routeName))
                         <li><a href="{{ route($routeName) }}" class="{{ Request::routeIs($lowerName . '.*') ? 'active' : '' }}"><i class="{{ $icon }}"></i> {{ $displayName }}</a></li>
                     @endif
                 @endforeach

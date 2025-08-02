@@ -37,8 +37,48 @@ class ModuleManagementController extends Controller
             return back()->withErrors(['name' => 'Module already exists.']);
         }
 
-        // Create the module
+        // Create the module and its migration
         Artisan::call('module:make', ['name' => [$moduleName]]);
+        Artisan::call('module:make-migration', [
+            'name' => 'create_' . strtolower($moduleName) . '_table',
+            'module' => $moduleName
+        ]);
+
+        // Rename Database and subfolders to lowercase
+        $databasePath = $modulePath . '/Database';
+        if (File::exists($databasePath)) {
+            $newDatabasePath = $modulePath . '/database';
+            File::move($databasePath, $newDatabasePath);
+
+            $migrationsPath = $newDatabasePath . '/Migrations';
+            if (File::exists($migrationsPath)) {
+                File::move($migrationsPath, $newDatabasePath . '/migrations');
+            }
+
+            $factoriesPath = $newDatabasePath . '/Factories';
+            if (File::exists($factoriesPath)) {
+                File::move($factoriesPath, $newDatabasePath . '/factories');
+            }
+            $seedersPath = $newDatabasePath . '/Seeders';
+            if (File::exists($seedersPath)) {
+                File::move($seedersPath, $newDatabasePath . '/seeders');
+            }
+
+            // Update references in generated files
+            $providerPath = $modulePath . '/Providers/' . $moduleName . 'ServiceProvider.php';
+            if (File::exists($providerPath)) {
+                $content = File::get($providerPath);
+                File::put($providerPath, str_replace('Database/Migrations', 'database/migrations', $content));
+            }
+
+            $composerJsonPath = $modulePath . '/composer.json';
+            if (File::exists($composerJsonPath)) {
+                $content = File::get($composerJsonPath);
+                $content = str_replace('Database/Factories', 'database/factories', $content);
+                $content = str_replace('Database/Seeders', 'database/seeders', $content);
+                File::put($composerJsonPath, $content);
+            }
+        }
 
         // Move everything from app to root and remove app directory
         $appPath = $modulePath . '/app';
@@ -66,12 +106,6 @@ class ModuleManagementController extends Controller
             $moduleJson['enabled'] = $validated['enabled'];
             File::put($moduleJsonPath, json_encode($moduleJson, JSON_PRETTY_PRINT));
         }
-
-        // Create migration
-        Artisan::call('module:make-migration', [
-            'name' => 'create_' . strtolower($moduleName) . '_table',
-            'module' => $moduleName
-        ]);
 
         ModuleManagement::create($validated);
 
@@ -163,13 +197,24 @@ class ModuleManagementController extends Controller
 
     public function destroy(ModuleManagement $modulemanagement)
     {
-        $modulePath = base_path('Modules/' . $modulemanagement->name);
+        $moduleName = $modulemanagement->name;
+        $modulePath = base_path('Modules/' . $moduleName);
 
         if (File::exists($modulePath)) {
             File::deleteDirectory($modulePath);
         }
 
         $modulemanagement->delete();
+
+        // Remove from modules_statuses.json
+        $statusesFile = base_path('modules_statuses.json');
+        if (File::exists($statusesFile)) {
+            $statuses = json_decode(File::get($statusesFile), true);
+            if (isset($statuses[$moduleName])) {
+                unset($statuses[$moduleName]);
+                File::put($statusesFile, json_encode($statuses, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+            }
+        }
 
         return redirect()->route('modulemanagement.index')->with('success', 'Module deleted successfully.');
     }

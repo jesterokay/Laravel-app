@@ -4,7 +4,7 @@
     "scripts": {
         "build": "vite build",
         "dev": "vite",
-        "gemini": "npx https://github.com/google-gemini/gemini-cli"
+        "gemini": "node ./node_modules/.bin/gemini"
     },
     "devDependencies": {
         "autoprefixer": "^10.4.20",
