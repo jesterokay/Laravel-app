@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>404 Not Found</title>
+    <title>500 Server Error</title>
     @vite('resources/css/app.css')
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
@@ -16,15 +16,15 @@
     <div class="w-full max-w-lg text-center">
         <div class="bg-white rounded-2xl shadow-2xl p-10 transform transition-all duration-500 hover:scale-105">
             <div class="mb-8">
-                <svg class="mx-auto h-32 w-32 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <svg class="mx-auto h-32 w-32 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
             </div>
-            <h1 class="text-5xl md:text-6xl font-bold text-indigo-600">404</h1>
-            <h2 class="text-3xl md:text-4xl font-bold mt-4">Page Not Found</h2>
-            <p class="mt-4 text-gray-600">The page you are looking for does not exist. It might have been moved or deleted.</p>
-
-            <a href="{{ url('/') }}" class="inline-block mt-8 px-8 py-4 font-bold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transform transition-transform duration-300 hover:scale-110">
+            <h1 class="text-5xl md:text-6xl font-bold text-red-600">500</h1>
+            <h2 class="text-3xl md:text-4xl font-bold mt-4">Server Error</h2>
+            <p class="mt-4 text-gray-600">We're sorry, something went wrong on our end. Please try again later.</p>
+            
+            <a href="{{ url('/') }}" class="inline-block mt-8 px-8 py-4 font-bold text-white bg-red-600 rounded-lg hover:bg-red-700 transform transition-transform duration-300 hover:scale-110">
                 Go to Homepage
             </a>
         </div>
