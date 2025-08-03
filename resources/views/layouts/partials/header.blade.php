@@ -1,5 +1,5 @@
 <header class="bg-dark text-white sticky-top d-flex align-items-center justify-content-between px-3 shadow"
-    style="height: 50px; z-index: 2001;">
+    style="height: 50px; z-index: 2000;">
     <div class="d-flex align-items-center">
         <button class="bg-transparent border-0 text-white me-2" id="toggleSidebar" aria-expanded="false"
             aria-controls="sidebar">

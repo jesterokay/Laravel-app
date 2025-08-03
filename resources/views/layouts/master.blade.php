@@ -61,7 +61,7 @@
         @media (max-width: 768px) {
             .sidebar {
                 width: 70%;
-                z-index: 2000;
+                z-index: 2002;
                 transform: translateX(-100%);
                 position: fixed;
                 top: 0;
@@ -91,7 +91,7 @@
                 width: 100%;
                 height: 100%;
                 background: rgba(0, 0, 0, 0.5);
-                z-index: 1999;
+                z-index: 2001;
                 pointer-events: auto; /* Allow clicks to pass through to lower layers */
             }
 

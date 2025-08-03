@@ -143,7 +143,7 @@
         left: 0;
         padding-bottom: 5%;
         transition: transform 0.4s cubic-bezier(0.215, 0.61, 0.355, 1);
-        z-index: 2000;
+        z-index: 2002;
         transform: translateX(-100%);
         overflow-y: auto;
         scrollbar-width: none; /* Firefox */
