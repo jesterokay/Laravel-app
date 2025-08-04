@@ -10,24 +10,24 @@
         <table class="min-w-full leading-normal">
             <thead>
                 <tr>
-                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Name</th>
-                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Description</th>
-                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
-                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
+                    <th class="px-2 py-2 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Name</th>
+                    <th class="px-2 py-2 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Description</th>
+                    <th class="px-2 py-2 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
+                    <th class="px-2 py-2 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach ($modules as $module)
                 <tr>
-                    <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">{{ $module->name }}</td>
-                    <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">{{ $module->description }}</td>
-                    <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                    <td class="px-2 py-2 border-b border-gray-200 bg-white text-sm">{{ $module->name }}</td>
+                    <td class="px-2 py-2 border-b border-gray-200 bg-white text-sm">{{ $module->description }}</td>
+                    <td class="px-2 py-2 border-b border-gray-200 bg-white text-sm">
                         <span class="relative inline-block px-3 py-1 font-semibold leading-tight {{ $module->enabled ? 'text-green-900' : 'text-red-900' }}">
                             <span aria-hidden class="absolute inset-0 {{ $module->enabled ? 'bg-green-200' : 'bg-red-200' }} opacity-50 rounded-full"></span>
                             <span class="relative">{{ $module->enabled ? 'Enabled' : 'Disabled' }}</span>
                         </span>
                     </td>
-                    <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                    <td class="px-2 py-2 border-b border-gray-200 bg-white text-sm">
                         @php
                             $routeName = strtolower($module->name) . '.index';
                         @endphp

@@ -13,13 +13,44 @@ class ModuleManagementController extends Controller
 {
     public function index()
     {
-        $modules = ModuleManagement::all();
+        $modulePaths = File::directories(base_path('Modules'));
         $statusesFile = base_path('modules_statuses.json');
-        $statuses = [];
-        if (File::exists($statusesFile)) {
-            $statuses = json_decode(File::get($statusesFile), true);
+        $statuses = json_decode(File::exists($statusesFile) ? File::get($statusesFile) : '[]', true);
+
+        // Get all module names from the filesystem
+        $filesystemModules = collect($modulePaths)->map(function ($path) {
+            return basename($path);
+        })->filter(function ($name) {
+            // Filter out ModuleManagement
+            return $name !== 'ModuleManagement';
+        });
+
+        // Ensure a record for each module exists in the database
+        foreach ($filesystemModules as $moduleName) {
+            $moduleJsonPath = base_path('Modules/' . $moduleName . '/module.json');
+            $description = '';
+            if (File::exists($moduleJsonPath)) {
+                $moduleJson = json_decode(File::get($moduleJsonPath), true);
+                $description = $moduleJson['description'] ?? '';
+            }
+
+            ModuleManagement::updateOrCreate(
+                ['name' => $moduleName],
+                ['description' => $description] // Update description if needed
+            );
         }
 
+        // Clean up database records for modules that no longer exist on the filesystem
+        $dbModules = ModuleManagement::where('name', '!=', 'ModuleManagement')->pluck('name');
+        $deletedModules = $dbModules->diff($filesystemModules);
+        if ($deletedModules->isNotEmpty()) {
+            ModuleManagement::whereIn('name', $deletedModules)->delete();
+        }
+
+        // Get the final list of modules from the database
+        $modules = ModuleManagement::where('name', '!=', 'ModuleManagement')->get();
+
+        // Attach the enabled status from the json file
         foreach ($modules as $module) {
             $module->enabled = $statuses[$module->name] ?? false;
         }
