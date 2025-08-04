@@ -24,11 +24,7 @@
             <h2 class="text-3xl md:text-4xl font-bold mt-4">Forbidden</h2>
             <p class="mt-4 text-gray-600">You don't have permission to access this page.</p>
             
-            <a href="{{ url('/') }}" class="inline-block mt-8 px-8 py-4 font-bold text-white bg-yellow-500 rounded-lg hover:bg-yellow-600 transform transition-transform duration-300 hover:scale-110">
-                Go to Homepage
-            </a>
-            
-            <a href="{{ url('/') }}" class="inline-block mt-8 px-8 py-4 font-bold text-white bg-yellow-500 rounded-lg hover:bg-yellow-600 transform transition-transform duration-300 hover:scale-110">
+            <a href="{{ url('/') }}" class="inline-block mt-8 px-8 py-4 font-bold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transform transition-transform duration-300 hover:scale-110">
                 Go to Homepage
             </a>
         </div>
