@@ -3,7 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Customer;
-use App\Models\Employee;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class SaleFactory extends Factory
@@ -12,7 +12,7 @@ class SaleFactory extends Factory
     {
         return [
             'customer_id' => Customer::factory(),
-            'user_id' => Employee::factory(),
+            'user_id' => User::factory(),
             'total_amount' => $this->faker->randomFloat(2, 100, 10000),
             'tax_amount' => $this->faker->randomFloat(2, 0, 1000),
             'status' => $this->faker->randomElement(['completed', 'pending', 'cancelled']),

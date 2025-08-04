@@ -4,7 +4,7 @@ namespace Database\Factories;
 
 use App\Models\Purchase;
 use App\Models\Supplier;
-use App\Models\Employee;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class PurchaseFactory extends Factory
@@ -15,7 +15,7 @@ class PurchaseFactory extends Factory
     {
         return [
             'supplier_id' => Supplier::factory(),
-            'user_id' => Employee::factory(),
+            'user_id' => User::factory(),
             'total_amount' => $this->faker->randomFloat(2, 100, 10000),
             'tax_amount' => $this->faker->randomFloat(2, 0, 1000),
             'status' => $this->faker->randomElement(['completed', 'pending', 'cancelled']),

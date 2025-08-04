@@ -18,7 +18,7 @@ return new class extends Migration {
             $table->timestamps();
             // Foreign keys
             $table->foreign('customer_id')->references('id')->on('customers')->onDelete('set null');
-            $table->foreign('user_id')->references('id')->on('employees')->onDelete('set null');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('set null');
         });
     }
 

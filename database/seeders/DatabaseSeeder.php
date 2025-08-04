@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\Employee;
+use App\Models\User;
 use App\Models\Position;
 use App\Models\Department;
 use Illuminate\Support\Str;
@@ -85,8 +85,8 @@ class DatabaseSeeder extends Seeder
             ['description' => 'System Administration']
         );
 
-        if (Employee::count() === 0) {
-            Employee::create([
+        if (User::count() === 0) {
+            User::create([
                 'id' => 1,
                 'department_id' => $department->id,
                 'position_id' => $position->id,
@@ -102,7 +102,7 @@ class DatabaseSeeder extends Seeder
                 'image' => null,
             ])->syncRoles(['superadmin']);
 
-            Employee::create([
+            User::create([
                 'id' => 2,
                 'department_id' => $department->id,
                 'position_id' => $position->id,
@@ -118,7 +118,7 @@ class DatabaseSeeder extends Seeder
                 'image' => null,
             ])->syncRoles(['admin']);
 
-            Employee::create([
+            User::create([
                 'id' => 3,
                 'department_id' => $department->id,
                 'position_id' => $position->id,
@@ -135,7 +135,7 @@ class DatabaseSeeder extends Seeder
             ])->syncRoles(['user']);
 
             $faker = Faker::create();
-            Employee::create([
+            User::create([
                 'department_id' => $department->id,
                 'position_id' => $position->id,
                 'username' => $faker->unique()->userName,
@@ -159,7 +159,7 @@ class DatabaseSeeder extends Seeder
             CurrencySeeder::class,
             CustomerSeeder::class,
             SupplierSeeder::class,
-            EmployeeSeeder::class,
+            UserSeeder::class,
             PurchaseSeeder::class,
             ExpenseSeeder::class,
             SaleSeeder::class,

@@ -36,13 +36,13 @@
         </li>
 
         <!-- Human Resources -->
-        <li class="{{ Request::routeIs('employees.*', 'departments.*', 'positions.*', 'roles.*', 'attendances.*') ? 'main-active' : '' }}">
+        <li class="{{ Request::routeIs('users.*', 'departments.*', 'positions.*', 'roles.*', 'attendances.*') ? 'main-active' : '' }}">
             <a href="#">
                 <i class="fas fa-users-cog"></i> Human Resources
                 <i class="fas fa-chevron-down dropdown-icon"></i>
             </a>
             <ul class="submenu">
-                <li><a href="{{ route('employees.index') }}" class="{{ Request::routeIs('employees.index') ? 'active' : '' }}"><i class="fas fa-users"></i> Employees</a></li>
+                <li><a href="{{ route('users.index') }}" class="{{ Request::routeIs('users.index') ? 'active' : '' }}"><i class="fas fa-users"></i> Users</a></li>
                 <li><a href="{{ route('departments.index') }}" class="{{ Request::routeIs('departments.index') ? 'active' : '' }}"><i class="fas fa-sitemap"></i> Departments</a></li>
                 <li><a href="{{ route('positions.index') }}" class="{{ Request::routeIs('positions.index') ? 'active' : '' }}"><i class="fas fa-briefcase"></i> Positions</a></li>
                 <li><a href="{{ route('roles.index') }}" class="{{ Request::routeIs('roles.index') ? 'active' : '' }}"><i class="fas fa-user-tag"></i> Roles</a></li>

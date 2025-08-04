@@ -16,7 +16,7 @@ return new class extends Migration {
             $table->date('expense_date');
             $table->timestamps();
 
-            $table->foreign('user_id')->references('id')->on('employees')->onDelete('set null');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('set null');
             $table->foreign('category_id')->references('id')->on('categories')->onDelete('restrict');
         });
     }

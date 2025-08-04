@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Models\Employee;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
@@ -21,12 +21,12 @@ class ImpersonateController extends Controller
     //     })->only(['impersonate']);
     // }
 
-    public function impersonate($employeeId)
+    public function impersonate($userId)
     {
-        $employee = Employee::findOrFail($employeeId);
+        $user = User::findOrFail($userId);
     
-        if ($employee->hasRole('superadmin')) {
-            return redirect()->route('employees.index')->with('error', 'Cannot impersonate another superadmin.');
+        if ($user->hasRole('superadmin')) {
+            return redirect()->route('users.index')->with('error', 'Cannot impersonate another superadmin.');
         }
     
         // Save the current superadmin ID so we can return later
@@ -34,9 +34,9 @@ class ImpersonateController extends Controller
         Session::put('original_user_id', Auth::id());
     
         // Now fully log in as the employee
-        Auth::login($employee);
+        Auth::login($user);
     
-        return redirect()->route('home')->with('success', 'You are now impersonating ' . $employee->full_name);
+        return redirect()->route('home')->with('success', 'You are now impersonating ' . $user->full_name);
     }
     
     public function stopImpersonating()
@@ -46,7 +46,7 @@ class ImpersonateController extends Controller
         }
     
         $originalUserId = Session::get('original_user_id');
-        $originalUser = Employee::findOrFail($originalUserId);
+        $originalUser = User::findOrFail($originalUserId);
     
         // Log back in as the original superadmin
         Auth::login($originalUser);
@@ -54,6 +54,6 @@ class ImpersonateController extends Controller
         // Clean up session
         Session::forget(['impersonating', 'original_user_id']);
     
-        return redirect()->route('employees.index')->with('success', 'You have returned to your superadmin account.');
+        return redirect()->route('users.index')->with('success', 'You have returned to your superadmin account.');
     }    
 }

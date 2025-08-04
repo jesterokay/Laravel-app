@@ -4,11 +4,11 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateEmployeesTable extends Migration
+class CreateUsersTable extends Migration
 {
     public function up()
     {
-        Schema::create('employees', function (Blueprint $table) {
+        Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('department_id')->nullable();
             $table->unsignedBigInteger('position_id')->nullable();
@@ -25,7 +25,7 @@ class CreateEmployeesTable extends Migration
             $table->timestamps();
         });
 
-        Schema::table('employees', function (Blueprint $table) {
+        Schema::table('users', function (Blueprint $table) {
             $table->foreign('department_id')->references('id')->on('departments')->onDelete('set null');
             $table->foreign('position_id')->references('id')->on('positions')->onDelete('set null');
         });
@@ -33,11 +33,11 @@ class CreateEmployeesTable extends Migration
 
     public function down()
     {
-        Schema::table('employees', function (Blueprint $table) {
+        Schema::table('users', function (Blueprint $table) {
             $table->dropForeign(['department_id']);
             $table->dropForeign(['position_id']);
         });
         
-        Schema::dropIfExists('employees');
+        Schema::dropIfExists('users');
     }
 }

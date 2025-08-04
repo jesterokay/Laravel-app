@@ -2,14 +2,14 @@
 
 namespace Database\Factories;
 
-use App\Models\Employee;
+use App\Models\User;
 use App\Models\Department;
 use App\Models\Position;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-class EmployeeFactory extends Factory
+class UserFactory extends Factory
 {
-    protected $model = Employee::class;
+    protected $model = User::class;
 
     public function definition()
     {

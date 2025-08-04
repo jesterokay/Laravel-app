@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\HR;
 
 use App\Http\Controllers\Controller;
-use App\Models\Employee;
+use App\Models\User;
 use App\Models\Department;
 use App\Models\Position;
 use Illuminate\Http\Request;
@@ -15,15 +15,15 @@ use Spatie\Permission\Models\Role as SpatieRole;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 
-class EmployeeController extends Controller
+class UserController extends Controller
 {
     public function index()
     {
-        if (!auth()->user()->hasPermissionTo('view-employees')) {
-            abort(403, 'Unauthorized to view employee');
+        if (!auth()->user()->hasPermissionTo('view-users')) {
+            abort(403, 'Unauthorized to view user');
         }
 
-        $query = Employee::with(['department', 'position'])->latest();
+        $query = User::with(['department', 'position'])->latest();
 
         if (!auth()->user()->hasRole('superadmin')) {
             $query->whereDoesntHave('roles', function ($query) {
@@ -31,9 +31,9 @@ class EmployeeController extends Controller
             });
         }
 
-        $employees = $query->paginate(10);
+        $users = $query->paginate(10);
 
-        return view('employees.index', compact('employees'));
+        return view('users.index', compact('users'));
     }
 
     public function create()
@@ -41,7 +41,7 @@ class EmployeeController extends Controller
         $departments = Department::all();
         $positions = Position::all();
         $spatieRoles = SpatieRole::where('name', '!=', 'superadmin')->get();
-        return view('employees.create', compact('departments', 'positions', 'spatieRoles'));
+        return view('users.create', compact('departments', 'positions', 'spatieRoles'));
     }
 
     public function store(Request $request)
@@ -50,11 +50,11 @@ class EmployeeController extends Controller
             'department_id' => 'required|exists:departments,id',
             'position_id' => 'required|exists:positions,id',
             'spatie_role' => 'required|exists:roles,name|not_in:superadmin',
-            'username' => 'required|unique:employees,username',
+            'username' => 'required|unique:users,username',
             'password' => 'required|confirmed|min:3',
             'first_name' => 'required|string',
             'last_name' => 'required|string',
-            'email' => 'required|email|unique:employees,email',
+            'email' => 'required|email|unique:users,email',
             'phone' => 'nullable|string',
             'hire_date' => 'required|date',
             'salary' => 'required|numeric',
@@ -103,41 +103,41 @@ class EmployeeController extends Controller
         $validated['password'] = Hash::make($validated['password']);
         DB::beginTransaction();
         try {
-            $employee = Employee::create($validated);
-            $employee->assignRole($validated['spatie_role']);
+            $user = User::create($validated);
+            $user->assignRole($validated['spatie_role']);
             DB::commit();
-            return redirect()->route('employees.index')->with('success', 'Employee created successfully.');
+            return redirect()->route('users.index')->with('success', 'User created successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->with('error', 'Failed to create employee.');
+            return redirect()->back()->with('error', 'Failed to create user.');
         }
     }
 
-    public function show(Employee $employee)
+    public function show(User $user)
     {
-        if ($employee->hasRole('superadmin') && !auth()->user()->hasRole('superadmin')) {
+        if ($user->hasRole('superadmin') && !auth()->user()->hasRole('superadmin')) {
             abort(403, 'Unauthorized to view superadmin.');
         }
 
-        $imageUrl = $this->getTelegramImageUrl($employee->image);
+        $imageUrl = $this->getTelegramImageUrl($user->image);
 
-        return view('employees.show', compact('employee', 'imageUrl'));
+        return view('users.show', compact('user', 'imageUrl'));
     }
 
-    public function edit(Employee $employee)
+    public function edit(User $user)
     {
-        if ($employee->hasRole('superadmin') && !auth()->user()->hasRole('superadmin')) {
+        if ($user->hasRole('superadmin') && !auth()->user()->hasRole('superadmin')) {
             abort(403, 'Unauthorized to edit superadmin.');
         }
         $departments = Department::all();
         $positions = Position::all();
         $spatieRoles = SpatieRole::where('name', '!=', 'superadmin')->get();
-        return view('employees.edit', compact('employee', 'departments', 'positions', 'spatieRoles'));
+        return view('users.edit', compact('user', 'departments', 'positions', 'spatieRoles'));
     }
 
-    public function update(Request $request, Employee $employee)
+    public function update(Request $request, User $user)
     {
-        if ($employee->hasRole('superadmin') && !auth()->user()->hasRole('superadmin')) {
+        if ($user->hasRole('superadmin') && !auth()->user()->hasRole('superadmin')) {
             abort(403, 'Unauthorized to update superadmin.');
         }
 
@@ -147,13 +147,13 @@ class EmployeeController extends Controller
             'spatie_role' => [
                 'required',
                 'exists:roles,name',
-                $employee->hasRole('superadmin') ? 'in:superadmin' : 'not_in:superadmin',
+                $user->hasRole('superadmin') ? 'in:superadmin' : 'not_in:superadmin',
             ],
-            'username' => 'required|unique:employees,username,' . $employee->id,
+            'username' => 'required|unique:users,username,' . $user->id,
             'password' => 'nullable|confirmed|min:3',
             'first_name' => 'required|string',
             'last_name' => 'required|string',
-            'email' => 'required|email|unique:employees,email,' . $employee->id,
+            'email' => 'required|email|unique:users,email,' . $user->id,
             'phone' => 'nullable|string',
             'hire_date' => 'required|date',
             'salary' => 'required|numeric',
@@ -163,7 +163,7 @@ class EmployeeController extends Controller
 
         DB::beginTransaction();
         try {
-            $validated['image'] = $request->hasFile('image') ? null : $employee->image;
+            $validated['image'] = $request->hasFile('image') ? null : $user->image;
 
             if ($request->hasFile('image')) {
                 $client = new Client();
@@ -203,30 +203,30 @@ class EmployeeController extends Controller
                 $validated['password'] = Hash::make($validated['password']);
             }
 
-            if ($employee->hasRole('superadmin')) {
+            if ($user->hasRole('superadmin')) {
                 $validated['spatie_role'] = 'superadmin';
             }
 
-            $employee->update($validated);
-            $employee->syncRoles($validated['spatie_role']);
+            $user->update($validated);
+            $user->syncRoles($validated['spatie_role']);
             DB::commit();
-            return redirect()->route('employees.index')->with('success', 'Employee updated successfully.');
+            return redirect()->route('users.index')->with('success', 'User updated successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->with('error', 'Failed to update employee.');
+            return redirect()->back()->with('error', 'Failed to update user.');
         }
     }
 
-    public function destroy(Employee $employee)
+    public function destroy(User $user)
     {
-        if ($employee->hasRole('superadmin')) {
+        if ($user->hasRole('superadmin')) {
             abort(403, 'Unauthorized to delete superadmin.');
         }
         try {
-            $employee->delete();
-            return redirect()->route('employees.index')->with('success', 'Employee deleted successfully.');
+            $user->delete();
+            return redirect()->route('users.index')->with('success', 'User deleted successfully.');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Failed to delete employee.');
+            return redirect()->back()->with('error', 'Failed to delete user.');
         }
     }
 

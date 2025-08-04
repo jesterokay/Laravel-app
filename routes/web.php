@@ -7,7 +7,7 @@ use App\Http\Controllers\System\CurrencyController;
 use App\Http\Controllers\CRM\CustomerController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Auth\ImpersonateController;
-use App\Http\Controllers\HR\EmployeeController;
+use App\Http\Controllers\HR\UserController;
 use App\Http\Controllers\Finance\ExpenseController;
 use App\Http\Controllers\Inventory\InventorySummaryController;
 use App\Http\Controllers\Finance\PaymentMethodController;
@@ -50,10 +50,10 @@ Route::middleware('user-auth')->group(function () {
     Route::resource('currencies', CurrencyController::class);
     Route::resource('customers', CustomerController::class);
     Route::resource('suppliers', SupplierController::class);
-    Route::resource('employees', EmployeeController::class);
+    Route::resource('users', UserController::class);
     
     Route::middleware('superadmin')->group(function () {
-        Route::get('/impersonate/{employeeId}', [ImpersonateController::class, 'impersonate'])->name('impersonate');
+        Route::get('/impersonate/{userId}', [ImpersonateController::class, 'impersonate'])->name('impersonate');
     });
     Route::get('/stop-impersonating', [ImpersonateController::class, 'stopImpersonating'])->name('stop-impersonating');
     

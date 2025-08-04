@@ -11,7 +11,7 @@
     <div class="d-flex align-items-center gap-3 position-relative">
         <a class="text-white" title="home" href="{{ url('/') }}"><i class="fas fa-home d-block"></i></a>
         <a href="{{ route('customers.index') }}" class="text-white" title="customers"><i class="fas fa-user-friends d-block"></i></a>
-        <a class="text-white" title="employees" href="{{ route('employees.index') }}"><i class="fas fa-users d-block"></i></a>
+        <a class="text-white" title="users" href="{{ route('users.index') }}"><i class="fas fa-users d-block"></i></a>
         <a class="text-white" title="roles" href="{{ route('roles.index') }}"><i class="fas fa-user-shield"></i></a>
         <a class="text-white" title="attendances" href="{{ route('attendances.index') }}"><i class="fas fa-calendar-alt"></i></a>
         @if (session('impersonating') && session('original_user_id'))
@@ -51,7 +51,7 @@
                     }
                 @endphp
                 @if ($imageUrl)
-                    <a href="{{ route('employees.show', $user) }}" target="_blank">
+                    <a href="{{ route('users.show', $user) }}" target="_blank">
                         <img src="{{ $imageUrl }}" alt="Profile Image"
                             class="w-16 h-16 rounded-full object-cover border border-white">
                     </a>

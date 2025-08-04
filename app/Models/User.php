@@ -6,11 +6,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Spatie\Permission\Traits\HasRoles;
 
-class Employee extends Authenticatable
+class User extends Authenticatable
 {
     use HasFactory, HasRoles;
+    protected $guard_name = 'web';
 
-    protected $table = 'employees';
+    protected $table = 'users';
 
     protected $fillable = [
         'department_id',
