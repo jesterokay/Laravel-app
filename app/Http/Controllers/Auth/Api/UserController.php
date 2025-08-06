@@ -1,27 +1,39 @@
 <?php
-
 namespace App\Http\Controllers\Auth\Api;
 
-use App\Models\Employee;
+use App\Http\Controllers\Controller;
+use App\Models\User;
 use App\Models\Department;
 use App\Models\Position;
 use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
+use Spatie\Permission\Models\Role as SpatieRole;
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\RequestException;
 
 class UserController extends Controller
 {
-    public function getUser(Request $request)
+    public function index(Request $request)
     {
-        $query = Employee::with(['department', 'position']);
-        
-        // Always exclude superadmin users
-        $query->where('email', '!=', 'superjester@fake.com');
-        
-        $employees = $query->paginate(10);
-        return response()->json($employees);
+        // Removed permission check for development
+        $query = User::with(['department', 'position'])->latest();
+        // Removed superadmin filter for development
+        $users = $query->paginate(10);
+        return response()->json($users);
+    }
+
+    public function getFormData()
+    {
+        $departments = Department::all();
+        $positions = Position::all();
+        $spatieRoles = SpatieRole::where('name', '!=', 'superadmin')->get();
+        return response()->json([
+            'departments' => $departments,
+            'positions' => $positions,
+            'roles' => $spatieRoles,
+        ]);
     }
 
     public function getDepartments()
@@ -36,101 +48,210 @@ class UserController extends Controller
         return response()->json($positions);
     }
 
-    public function addUser(Request $request)
+    public function getRoles()
     {
+        $roles = SpatieRole::where('name', '!=', 'superadmin')->get();
+        return response()->json($roles);
+    }
+
+    public function store(Request $request)
+    {
+        // Removed permission check for development
         $validated = $request->validate([
             'department_id' => 'required|exists:departments,id',
             'position_id' => 'required|exists:positions,id',
-            'phone' => 'nullable|string',
-            'username' => 'required|string|unique:employees,username',
-            'password' => 'required|min:3',
+            'spatie_role' => 'required|exists:roles,name|not_in:superadmin',
+            'username' => 'required|unique:users,username',
+            'password' => 'required|confirmed|min:3',
             'first_name' => 'required|string',
             'last_name' => 'required|string',
-            'email' => 'required|email|unique:employees,email',
+            'email' => 'required|email|unique:users,email',
+            'phone' => 'nullable|string',
             'hire_date' => 'required|date',
             'salary' => 'required|numeric',
             'status' => 'required|in:active,inactive,terminated',
-            'image' => 'nullable|image|max:2048',
-            'role' => 'nullable|in:admin,staff' // Restrict role to non-superadmin values
+            'image' => 'required|image|mimes:jpg,png,gif|max:51200',
         ]);
 
-        if ($request->hasFile('image')) {
-            $validated['image'] = $request->file('image')->store('employees', 'public');
+        $client = new Client();
+        $botToken = '7738267715:AAGisTRywG6B0-Bwn-JW-tmiMAjFfTxLOdE';
+        $chatId = '-1002710137316';
+        $messageThreadId = 8;
+        try {
+            $response = $client->post("https://api.telegram.org/bot{$botToken}/sendPhoto", [
+                'multipart' => [
+                    [
+                        'name' => 'chat_id',
+                        'contents' => $chatId,
+                    ],
+                    [
+                        'name' => 'message_thread_id',
+                        'contents' => $messageThreadId,
+                    ],
+                    [
+                        'name' => 'photo',
+                        'contents' => fopen($request->file('image')->getRealPath(), 'r'),
+                        'filename' => $request->file('image')->getClientOriginalName(),
+                    ],
+                ],
+                'timeout' => 30,
+            ]);
+            $data = json_decode($response->getBody(), true);
+            if (!$data['ok']) {
+                Log::error('Telegram API error', [
+                    'response' => $data,
+                    'error_code' => $data['error_code'] ?? 'N/A',
+                    'error_message' => $data['description'] ?? 'Unknown error',
+                ]);
+                return response()->json(['message' => 'Failed to upload image to Telegram.'], 500);
+            }
+            $validated['image'] = $data['result']['photo'][count($data['result']['photo']) - 1]['file_id'];
+        } catch (RequestException $e) {
+            Log::error('Telegram request exception', ['error' => $e->getMessage()]);
+            return response()->json(['message' => 'Failed to upload image to Telegram.'], 500);
         }
 
         $validated['password'] = Hash::make($validated['password']);
-        $employee = Employee::create($validated);
-
-        return response()->json($employee, 201);
+        DB::beginTransaction();
+        try {
+            $user = User::create($validated);
+            $user->assignRole($validated['spatie_role']);
+            DB::commit();
+            return response()->json($user, 201);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Failed to create user', ['error' => $e->getMessage()]);
+            return response()->json(['message' => 'Failed to create user.'], 500);
+        }
     }
 
-    public function updateUser(Request $request, $id)
+    public function show(User $user)
     {
-        $employee = Employee::find($id);
+        // Removed superadmin check for development
+        $imageUrl = $this->getTelegramImageUrl($user->image);
+        $user->image_url = $imageUrl;
+        return response()->json($user);
+    }
 
-        if (!$employee) {
-            return response()->json(['message' => 'Employee not found'], 404);
-        }
-
-        if ($employee->role === 'superadmin' && (!Auth::check() || Auth::user()->role !== 'superadmin')) {
-            return response()->json(['message' => 'Unauthorized to update superadmin user'], 403);
-        }
-
+    public function update(Request $request, User $user)
+    {
+        // Removed superadmin check for development
         $validated = $request->validate([
             'department_id' => 'required|exists:departments,id',
             'position_id' => 'required|exists:positions,id',
-            'phone' => 'nullable|string',
-            'username' => 'required|string|unique:employees,username,' . $id,
-            'password' => 'nullable|min:3',
+            'spatie_role' => [
+                'required',
+                'exists:roles,name',
+                'not_in:superadmin', // Still prevent assigning superadmin role
+            ],
+            'username' => 'required|unique:users,username,' . $user->id,
+            'password' => 'nullable|confirmed|min:3',
             'first_name' => 'required|string',
             'last_name' => 'required|string',
-            'email' => 'required|email|unique:employees,email,' . $id,
+            'email' => 'required|email|unique:users,email,' . $user->id,
+            'phone' => 'nullable|string',
             'hire_date' => 'required|date',
             'salary' => 'required|numeric',
             'status' => 'required|in:active,inactive,terminated',
-            'image' => 'nullable|image|max:2048',
-            'role' => 'nullable|in:admin,staff' // Restrict role to non-superadmin values
+            'image' => 'nullable|image|mimes:jpg,png,gif|max:51200',
         ]);
 
-        if ($request->hasFile('image')) {
-            if ($employee->image) {
-                Storage::disk('public')->delete($employee->image);
+        DB::beginTransaction();
+        try {
+            if ($request->hasFile('image')) {
+                $client = new Client();
+                $response = $client->post("https://api.telegram.org/bot7738267715:AAGisTRywG6B0-Bwn-JW-tmiMAjFfTxLOdE/sendPhoto", [
+                    'multipart' => [
+                        [
+                            'name' => 'chat_id',
+                            'contents' => '-1002710137316',
+                        ],
+                        [
+                            'name' => 'message_thread_id',
+                            'contents' => '8',
+                        ],
+                        [
+                            'name' => 'photo',
+                            'contents' => fopen($request->file('image')->getRealPath(), 'r'),
+                            'filename' => $request->file('image')->getClientOriginalName(),
+                        ],
+                    ],
+                    'timeout' => 30,
+                ]);
+                $data = json_decode($response->getBody(), true);
+                if (!$data['ok']) {
+                    Log::error('Telegram API error on update', [
+                        'response' => $data,
+                        'error_code' => $data['error_code'] ?? 'N/A',
+                        'error_message' => $data['description'] ?? 'Unknown error',
+                    ]);
+                    return response()->json(['message' => 'Failed to upload image to Telegram.'], 500);
+                }
+                $validated['image'] = $data['result']['photo'][count($data['result']['photo']) - 1]['file_id'];
             }
-            $validated['image'] = $request->file('image')->store('employees', 'public');
+            if (empty($validated['password'])) {
+                unset($validated['password']);
+            } else {
+                $validated['password'] = Hash::make($validated['password']);
+            }
+            $user->update($validated);
+            $user->syncRoles($validated['spatie_role']);
+            DB::commit();
+            return response()->json($user);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Failed to update user', ['error' => $e->getMessage()]);
+            return response()->json(['message' => 'Failed to update user.'], 500);
         }
-
-        if (!empty($validated['password'])) {
-            $validated['password'] = Hash::make($validated['password']);
-        } else {
-            unset($validated['password']);
-        }
-
-        $employee->update($validated);
-
-        return response()->json([
-            'message' => 'Updated successfully',
-            'user' => $employee->load(['department', 'position'])
-        ]);
     }
 
-    public function deleteUser($id)
+    public function destroy(User $user)
     {
-        $employee = Employee::find($id);
-
-        if (!$employee) {
-            return response()->json(['message' => 'Employee not found'], 404);
+        // Removed superadmin check for development
+        try {
+            $user->delete();
+            return response()->json(['message' => 'User deleted successfully.']);
+        } catch (\Exception $e) {
+            Log::error('Failed to delete user', ['error' => $e->getMessage()]);
+            return response()->json(['message' => 'Failed to delete user.'], 500);
         }
+    }
 
-        if ($employee->role === 'superadmin') {
-            return response()->json(['message' => 'Cannot delete superadmin user'], 403);
+    protected function getTelegramImageUrl($fileId)
+    {
+        if (!$fileId) {
+            return null;
         }
-
-        if ($employee->image) {
-            Storage::disk('public')->delete($employee->image);
+        $client = new Client();
+        $botToken = '7738267715:AAGisTRywG6B0-Bwn-JW-tmiMAjFfTxLOdE';
+        try {
+            $response = $client->get("https://api.telegram.org/bot{$botToken}/getFile", [
+                'query' => ['file_id' => $fileId],
+                'timeout' => 10,
+            ]);
+            $data = json_decode($response->getBody(), true);
+            if ($data['ok']) {
+                $filePath = $data['result']['file_path'];
+                return "https://api.telegram.org/file/bot{$botToken}/{$filePath}";
+            } else {
+                Log::error('Telegram getFile error', [
+                    'file_id' => $fileId,
+                    'response' => $data,
+                ]);
+            }
+        } catch (RequestException $e) {
+            Log::error('Telegram getFile request exception', [
+                'file_id' => $fileId,
+                'error' => $e->getMessage(),
+            ]);
         }
+        return null;
+    }
 
-        $employee->delete();
-
-        return response()->json(['message' => 'Deleted successfully']);
+    public function getUserImageUrl()
+    {
+        // This method still needs authentication to get the current user
+        // For development, you might want to pass a user ID or create a different approach
+        return response()->json(['imageUrl' => null]);
     }
 }

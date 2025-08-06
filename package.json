@@ -32,5 +32,8 @@
     "bugs": {
         "url": "https://github.com/jesterokay/laravel-app/issues"
     },
-    "homepage": "https://github.com/jesterokay/laravel-app#readme"
+    "homepage": "https://github.com/jesterokay/laravel-app#readme",
+    "dependencies": {
+        "@google/gemini-cli": "^0.1.18"
+    }
 }
